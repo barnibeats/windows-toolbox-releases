@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- windows-toolbox-page built=2026-10-03T10:43:48Z -->
+<!-- windows-toolbox-page built=2026-10-03T10:48:38Z -->
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -219,6 +219,9 @@ footer{text-align:center;color:var(--muted);font-size:.85rem;padding:30px 16px 5
 .lang button.on{background:linear-gradient(135deg,var(--a1),var(--a2));color:#fff;box-shadow:0 4px 14px -6px var(--a1)}
 main.swap{animation:langSwap .35s ease}
 @keyframes langSwap{from{opacity:.25;transform:translateY(6px)}}
+
+/* the hidden attribute always wins over component display rules (.btn, label, …) */
+[hidden]{display:none!important}
 
 /* card facts: stars, version, date, badges */
 .meta{position:relative;display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:10px}
