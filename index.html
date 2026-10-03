@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- windows-toolbox-page built=2026-10-03T10:36:03Z -->
+<!-- windows-toolbox-page built=2026-10-03T10:43:48Z -->
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -1201,13 +1201,19 @@ updRestart.onclick = () => send({cmd: "applyUpdate"});
 const semver = v => String(v).replace(/^v/i, "").split(/[.-]/).slice(0, 3).map(x => parseInt(x, 10) || 0);
 const newer = (a, b) => { const x = semver(a), y = semver(b); for (let i = 0; i < 3; i++) if (x[i] !== y[i]) return x[i] > y[i]; return false; };
 if (appv && !HOST && !/dev/.test(appv)) {
-  // older exe (≤ 1.1) without a host bridge: just point to the new release
-  gh(REPO + "/releases/latest").then(r => r.ok ? r.json() : null).then(rel => {
-    if (!rel || !newer(rel.tag_name, appv)) return;
-    const exe = (rel.assets || []).find(a => /\.exe$/i.test(a.name));
-    updState = {state: "available", version: rel.tag_name, url: exe ? exe.browser_download_url : rel.html_url};
-    renderUpdate();
-  }).catch(() => {});
+  // older exe (≤ 1.1) without a host bridge: just point to the new release.
+  // latest.json is a plain file (no API rate limit); the GitHub API is the fallback.
+  fetch(`https://raw.githubusercontent.com/${REPO}/main/latest.json?t=${Date.now()}`).then(r => r.ok ? r.json() : Promise.reject())
+    .catch(() => gh(REPO + "/releases/latest").then(r => r.ok ? r.json() : null).then(rel => {
+      if (!rel) return null;
+      const exe = (rel.assets || []).find(a => /\.exe$/i.test(a.name));
+      return {version: rel.tag_name, url: exe ? exe.browser_download_url : rel.html_url};
+    }))
+    .then(l => {
+      if (!l || !newer(l.version, appv)) return;
+      updState = {state: "available", version: l.version, url: l.url};
+      renderUpdate();
+    }).catch(() => {});
 }
 
 // messages from the exe
