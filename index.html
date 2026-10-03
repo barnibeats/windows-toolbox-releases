@@ -1,0 +1,1168 @@
+<!doctype html>
+<!-- windows-toolbox-page: the desktop app only accepts a remote update that contains this marker -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Windows Toolbox</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#07080f; --bg2:#0e1020; --card:rgba(255,255,255,.045); --card-h:rgba(255,255,255,.08);
+  --border:rgba(255,255,255,.09); --text:#e8eaf6; --muted:#9097b8;
+  --a1:#7c5cff; --a2:#00d4ff; --a3:#ff4fd8; --ok:#3ddc97;
+}
+:root[data-theme="light"]{
+  --bg:#f4f6ff; --bg2:#e9ecff; --card:rgba(255,255,255,.75); --card-h:#fff;
+  --border:rgba(20,30,80,.10); --text:#141833; --muted:#5a6185;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:Inter,system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.55;overflow-x:hidden;transition:background .4s,color .4s}
+a{color:inherit;text-decoration:none}
+
+/* animated background */
+.bg{position:fixed;inset:0;z-index:-2;overflow:hidden}
+.blob{position:absolute;width:520px;height:520px;border-radius:50%;filter:blur(110px);opacity:.38;animation:float 22s ease-in-out infinite}
+.blob.b1{background:var(--a1);top:-120px;left:-120px}
+.blob.b2{background:var(--a2);bottom:-160px;right:-100px;animation-delay:-7s}
+.blob.b3{background:var(--a3);top:40%;left:45%;width:380px;height:380px;animation-delay:-14s;opacity:.22}
+@keyframes float{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(120px,80px) scale(1.15)}66%{transform:translate(-80px,140px) scale(.9)}}
+.grid-bg{position:fixed;inset:0;z-index:-1;background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);background-size:56px 56px;mask-image:radial-gradient(ellipse at 50% 0%,#000 30%,transparent 75%)}
+
+/* hero */
+header{max-width:1180px;margin:0 auto;padding:90px 16px 40px;text-align:center}
+.logo{display:inline-grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:28px;animation:spinIn 1.2s cubic-bezier(.2,.8,.2,1)}
+.logo span{width:30px;height:30px;border-radius:5px;background:linear-gradient(135deg,var(--a1),var(--a2))}
+.logo span:nth-child(2){background:linear-gradient(135deg,var(--a2),var(--ok))}
+.logo span:nth-child(3){background:linear-gradient(135deg,var(--a3),var(--a1))}
+.logo span:nth-child(4){background:linear-gradient(135deg,#ffb84f,var(--a3))}
+@keyframes spinIn{from{transform:rotate(-180deg) scale(0);opacity:0}to{transform:none;opacity:1}}
+h1{font-size:clamp(2.2rem,6vw,4.2rem);font-weight:800;letter-spacing:-.03em;line-height:1.05}
+.grad{background:linear-gradient(90deg,var(--a1),var(--a2),var(--a3),var(--a1));background-size:300% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:shine 8s linear infinite}
+@keyframes shine{to{background-position:300% 0}}
+.sub{color:var(--muted);max-width:640px;margin:18px auto 0;font-size:1.08rem}
+.stats{display:flex;justify-content:center;gap:34px;margin-top:34px;flex-wrap:wrap}
+.stat b{display:block;font-size:2rem;font-weight:800}
+.stat small{color:var(--muted)}
+
+/* nav */
+nav{position:sticky;top:0;z-index:20;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);background:color-mix(in srgb,var(--bg) 70%,transparent);border-bottom:1px solid var(--border)}
+.nav-in{max-width:1180px;margin:0 auto;padding:10px 16px;display:flex;gap:8px 10px;align-items:center;justify-content:center;flex-wrap:wrap}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;flex:1 1 100%;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{white-space:nowrap;padding:8px 14px;border-radius:999px;border:1px solid var(--border);background:var(--card);color:var(--muted);font:500 .9rem Inter;cursor:pointer;transition:.25s}
+.tab:hover{color:var(--text);transform:translateY(-1px)}
+.tab.on{background:linear-gradient(135deg,var(--a1),var(--a2));color:#fff;border-color:transparent;box-shadow:0 6px 20px -6px var(--a1)}
+.search{position:relative;flex:0 1 420px;min-width:180px}
+.search input{width:100%;padding:9px 14px 9px 36px;border-radius:999px;border:1px solid var(--border);background:var(--card);color:var(--text);font:inherit;outline:none;transition:.25s}
+.search input:focus{border-color:var(--a2);box-shadow:0 0 0 4px color-mix(in srgb,var(--a2) 20%,transparent)}
+.search svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);opacity:.6}
+.theme{width:38px;height:38px;border-radius:50%;border:1px solid var(--border);background:var(--card);color:var(--text);cursor:pointer;font-size:1.05rem;transition:transform .5s}
+.theme:hover{transform:rotate(180deg)}
+
+/* sections */
+main{max-width:1180px;margin:0 auto;padding:30px 16px 80px}
+section{margin-top:56px;scroll-margin-top:130px}
+.sec-h{display:flex;align-items:center;gap:14px;margin-bottom:6px}
+.sec-ic{font-size:1.7rem;width:52px;height:52px;display:grid;place-items:center;border-radius:14px;background:linear-gradient(135deg,color-mix(in srgb,var(--a1) 35%,transparent),color-mix(in srgb,var(--a2) 25%,transparent));border:1px solid var(--border)}
+h2{font-size:1.75rem;letter-spacing:-.02em}
+.sec-d{color:var(--muted);margin:4px 0 6px 66px}
+h3{font-size:.85rem;text-transform:uppercase;letter-spacing:.12em;color:var(--a2);margin:30px 0 14px;display:flex;align-items:center;gap:10px}
+h3::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,var(--border),transparent)}
+
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
+.card{position:relative;display:block;padding:18px 18px 16px;border-radius:16px;background:var(--card);border:1px solid var(--border);overflow:hidden;transition:transform .35s cubic-bezier(.2,.8,.2,1),background .3s,border-color .3s,box-shadow .35s;opacity:0;transform:translateY(24px)}
+.card.vis{opacity:1;transform:none}
+.card::before{content:"";position:absolute;inset:0;background:radial-gradient(400px circle at var(--mx,50%) var(--my,50%),color-mix(in srgb,var(--a1) 22%,transparent),transparent 45%);opacity:0;transition:opacity .3s}
+.card:hover{transform:translateY(-4px);background:var(--card-h);border-color:color-mix(in srgb,var(--a1) 50%,var(--border));box-shadow:0 18px 40px -18px color-mix(in srgb,var(--a1) 60%,transparent)}
+.card:hover::before{opacity:1}
+.card-t{position:relative;display:flex;align-items:center;justify-content:space-between;gap:8px;font-weight:600;font-size:1.02rem}
+.card-t .arr{opacity:.4;transition:.3s;font-size:.95rem}
+.card:hover .arr{opacity:1;transform:translate(3px,-3px);color:var(--a2)}
+.card p{position:relative;color:var(--muted);font-size:.9rem;margin-top:6px}
+.host{position:relative;display:inline-block;margin-top:10px;font:500 .72rem "JetBrains Mono";color:var(--muted);padding:2px 8px;border-radius:6px;border:1px solid var(--border)}
+.card{display:flex;flex-direction:column}
+.card .host{align-self:flex-start}
+
+/* edit mode */
+.edit{height:38px;padding:0 14px;border-radius:999px;border:1px solid var(--border);background:var(--card);color:var(--text);font:600 .88rem Inter;cursor:pointer;transition:.25s;white-space:nowrap}
+.edit:hover{border-color:var(--a2)}
+.edit.on{background:linear-gradient(135deg,#ff9f43,var(--a3));color:#fff;border-color:transparent;box-shadow:0 6px 20px -6px var(--a3)}
+.editbar{display:none;max-width:1180px;margin:0 auto;padding:0 16px 10px;align-items:center;justify-content:center;gap:8px 14px;flex-wrap:wrap;font-size:.88rem;color:var(--muted)}
+body.editing .editbar{display:flex;animation:slideDown .3s ease}
+@keyframes slideDown{from{opacity:0;transform:translateY(-8px)}}
+.editbar .btns{display:flex;gap:8px;flex-wrap:wrap}
+.editbar .btn{flex:0 0 auto;padding:6px 12px}
+.btn.danger:hover{border-color:#ff4d6d;color:#ff4d6d}
+.rm{position:absolute;top:10px;right:10px;z-index:3;width:28px;height:28px;border-radius:50%;border:1px solid var(--border);background:var(--bg2);color:var(--muted);cursor:pointer;display:none;place-items:center;font-size:.85rem;transition:.25s}
+.rm:hover{background:#ff4d6d;color:#fff;border-color:transparent;transform:rotate(90deg)}
+body.editing .rm{display:grid}
+body.editing .card-t .arr{visibility:hidden}
+body.editing .card{border-style:dashed}
+.mine-tag{font:600 .64rem Inter;padding:2px 7px;border-radius:999px;background:color-mix(in srgb,var(--a3) 22%,transparent);color:var(--a3);margin-left:8px;vertical-align:2px;letter-spacing:.02em}
+.card.out{animation:cardOut .3s forwards;pointer-events:none}
+@keyframes cardOut{to{opacity:0;transform:scale(.85)}}
+.card.new{animation:cardPop .5s cubic-bezier(.2,.8,.2,1)}
+@keyframes cardPop{0%{opacity:0;transform:scale(.85)}60%{transform:scale(1.03)}100%{opacity:1;transform:none}}
+.add-card{display:none;min-height:170px;border-radius:16px;border:2px dashed color-mix(in srgb,var(--a2) 45%,var(--border));background:transparent;color:var(--a2);font:600 .92rem Inter;cursor:pointer;flex-direction:column;align-items:center;justify-content:center;gap:8px;transition:.25s}
+.add-card b{font-size:2rem;line-height:1;font-weight:400;transition:transform .3s}
+.add-card:hover{background:color-mix(in srgb,var(--a2) 8%,transparent);transform:translateY(-3px)}
+.add-card:hover b{transform:rotate(90deg)}
+body.editing .add-card{display:flex}
+body:not(.editing) .group:not(:has(.card)){display:none}
+
+dialog{margin:auto;border:1px solid var(--border);border-radius:20px;padding:0;background:var(--bg2);color:var(--text);width:min(540px,calc(100vw - 32px));box-shadow:0 30px 80px -20px rgba(0,0,0,.6)}
+dialog[open]{animation:cardPop .35s cubic-bezier(.2,.8,.2,1)}
+dialog::backdrop{background:rgba(5,6,12,.6);backdrop-filter:blur(6px)}
+dialog form{padding:24px;display:grid;gap:14px}
+dialog h2{font-size:1.3rem}
+dialog label{display:grid;gap:6px;font-size:.85rem;color:var(--muted)}
+dialog [hidden]{display:none}
+dialog input,dialog select{padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:var(--bg);color:var(--text);font:inherit;outline:none;width:100%}
+dialog input:focus,dialog select:focus{border-color:var(--a2);box-shadow:0 0 0 3px color-mix(in srgb,var(--a2) 20%,transparent)}
+dialog .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+dialog .hint{font:500 .75rem "JetBrains Mono";color:var(--muted);min-height:1em;margin-top:-8px}
+dialog .hint.ok{color:var(--ok)}
+dialog .err{color:#ff6b81;font-size:.85rem;min-height:1em}
+dialog .dlg-acts{display:flex;gap:10px;justify-content:flex-end}
+dialog .dlg-acts .btn{flex:0 0 auto;padding:10px 18px}
+
+.toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,30px);opacity:0;pointer-events:none;z-index:50;display:flex;gap:14px;align-items:center;padding:10px 10px 10px 18px;border-radius:14px;background:var(--bg2);border:1px solid var(--border);box-shadow:0 20px 50px -15px rgba(0,0,0,.6);transition:.3s;font-size:.9rem;max-width:calc(100vw - 32px)}
+.toast.show{opacity:1;transform:translate(-50%,0);pointer-events:auto}
+.toast button{padding:7px 14px;border-radius:9px;border:none;cursor:pointer;font:600 .85rem Inter;color:#fff;background:linear-gradient(135deg,var(--a1),var(--a2))}
+@media (max-width:600px){ dialog .row{grid-template-columns:1fr} }
+
+.upd{position:fixed;left:50%;top:14px;transform:translateX(-50%);z-index:60;display:flex;align-items:center;gap:12px;padding:8px 8px 8px 18px;border-radius:14px;background:var(--bg2);border:1px solid color-mix(in srgb,var(--a2) 50%,var(--border));box-shadow:0 20px 50px -15px color-mix(in srgb,var(--a1) 70%,transparent);font-size:.9rem;max-width:calc(100vw - 32px);flex-wrap:wrap;animation:slideDown .4s ease}
+.upd[hidden]{display:none}
+.upd .btn{flex:0 0 auto;padding:7px 14px}
+.upd-x{width:30px;height:30px;border-radius:50%;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer}
+#ver{opacity:.7;font:500 .75rem "JetBrains Mono"}
+.card-t a::after{content:"";position:absolute;inset:0;z-index:1}
+.card-t a:focus-visible{outline:none}
+.card:has(.card-t a:focus-visible){border-color:var(--a2)}
+.acts{position:relative;z-index:2;display:flex;gap:8px;margin-top:auto;padding-top:14px}
+.btn{flex:1;display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:8px 10px;border-radius:10px;font:600 .82rem Inter;cursor:pointer;border:1px solid var(--border);background:var(--bg2);color:var(--text);transition:transform .2s,box-shadow .25s,background .25s,border-color .25s;white-space:nowrap}
+.btn:hover{transform:translateY(-1px);border-color:var(--a2)}
+.btn.dl{border-color:transparent;color:#fff;background:linear-gradient(135deg,var(--a1),var(--a2));background-size:150% 150%;box-shadow:0 6px 18px -8px var(--a1)}
+.btn.dl:hover{box-shadow:0 10px 26px -8px var(--a2);background-position:100% 0}
+.btn.dl .ic{display:inline-block;transition:transform .3s}
+.btn.dl:hover .ic{animation:bounce .7s ease infinite}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(3px)}}
+.btn.dl.busy{pointer-events:none;opacity:.85}
+.btn.dl.busy .ic{animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.btn.dl.ok{background:linear-gradient(135deg,#2bb673,var(--ok));color:#05210f}
+.btn.dl.alt{background:linear-gradient(135deg,#ff9f43,#ffb84f);color:#2a1600}
+.st{position:relative;z-index:2;min-height:0;font:500 .72rem "JetBrains Mono";color:var(--muted);margin-top:0;max-height:0;overflow:hidden;transition:max-height .3s,margin-top .3s;word-break:break-all}
+.st.show{max-height:60px;margin-top:8px}
+
+/* hotkeys */
+.keys{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:10px}
+.key{display:flex;align-items:center;gap:14px;padding:12px 16px;border-radius:14px;background:var(--card);border:1px solid var(--border);opacity:0;transform:translateY(24px);transition:.5s cubic-bezier(.2,.8,.2,1)}
+.key.vis{opacity:1;transform:none}
+.combo{display:flex;gap:4px;flex-wrap:wrap;flex-shrink:0}
+kbd{font:600 .78rem "JetBrains Mono";padding:4px 8px;border-radius:7px;background:var(--bg2);border:1px solid var(--border);border-bottom-width:3px;box-shadow:0 2px 0 rgba(0,0,0,.2)}
+.key span{color:var(--muted);font-size:.9rem}
+
+.tips{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.tip{padding:18px;border-radius:16px;background:var(--card);border:1px solid var(--border);opacity:0;transform:translateY(24px);transition:.5s cubic-bezier(.2,.8,.2,1)}
+.tip.vis{opacity:1;transform:none}
+.tip b{display:block;margin-bottom:6px}
+.tip span{color:var(--muted);font-size:.9rem}
+code{font-family:"JetBrains Mono";font-size:.82em;padding:1px 6px;border-radius:5px;background:var(--bg2);border:1px solid var(--border);word-break:break-all}
+
+.cmds{display:grid;gap:12px}
+.cmd{border-radius:14px;border:1px solid var(--border);background:var(--bg2);overflow:hidden;opacity:0;transform:translateY(24px);transition:.5s cubic-bezier(.2,.8,.2,1)}
+.cmd.vis{opacity:1;transform:none}
+.cmd-h{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid var(--border);color:var(--muted);font-size:.88rem}
+.cmd-h .dots{display:flex;gap:6px;margin-right:10px}
+.cmd-h .dots i{width:10px;height:10px;border-radius:50%;background:#ff5f57}
+.cmd-h .dots i:nth-child(2){background:#febc2e}.cmd-h .dots i:nth-child(3){background:#28c840}
+.copy{font:500 .8rem Inter;padding:5px 12px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text);cursor:pointer;transition:.2s}
+.copy:hover{border-color:var(--a2)}
+.copy.done{background:var(--ok);color:#06210f;border-color:transparent}
+pre{padding:14px 16px;overflow-x:auto;font:400 .86rem/1.6 "JetBrains Mono";color:var(--a2)}
+
+.warn{display:grid;gap:10px;counter-reset:w}
+.warn li{list-style:none;position:relative;padding:14px 16px 14px 58px;border-radius:14px;background:var(--card);border:1px solid var(--border);opacity:0;transform:translateX(-20px);transition:.5s}
+.warn li.vis{opacity:1;transform:none}
+.warn li::before{counter-increment:w;content:counter(w);position:absolute;left:16px;top:50%;transform:translateY(-50%);width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:.85rem;background:linear-gradient(135deg,#ffb84f,var(--a3));color:#fff}
+
+.note{margin-top:14px;padding:12px 16px;border-radius:12px;border:1px dashed color-mix(in srgb,#ffb84f 60%,transparent);color:var(--muted);font-size:.9rem}
+.empty{display:none;text-align:center;color:var(--muted);padding:60px 0;font-size:1.1rem}
+.hidden{display:none!important}
+
+footer{text-align:center;color:var(--muted);font-size:.85rem;padding:30px 16px 50px}
+.top{position:fixed;right:20px;bottom:20px;width:46px;height:46px;border-radius:50%;border:none;cursor:pointer;background:linear-gradient(135deg,var(--a1),var(--a2));color:#fff;font-size:1.2rem;box-shadow:0 10px 30px -8px var(--a1);opacity:0;transform:translateY(20px);transition:.3s;pointer-events:none}
+.top.show{opacity:1;transform:none;pointer-events:auto}
+#progress{position:fixed;top:0;left:0;height:3px;width:0;z-index:30;background:linear-gradient(90deg,var(--a1),var(--a2),var(--a3))}
+
+@media (max-width:600px){
+  header{padding-top:60px}
+  .sec-d{margin-left:0}
+  .keys{grid-template-columns:1fr}
+  .key{flex-direction:column;align-items:flex-start;gap:8px}
+  .tabs{flex-wrap:nowrap;justify-content:flex-start;overflow-x:auto}
+  .search{flex:1 1 auto}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before{animation:none!important;transition:none!important}
+  .card,.key,.tip,.cmd,.warn li{opacity:1;transform:none}
+}
+
+/* language switch */
+.lang{display:flex;gap:2px;padding:3px;border-radius:999px;border:1px solid var(--border);background:var(--card)}
+.lang button{border:none;background:transparent;color:var(--muted);font:600 .78rem Inter;letter-spacing:.04em;padding:7px 10px;border-radius:999px;cursor:pointer;transition:.25s}
+.lang button:hover{color:var(--text)}
+.lang button.on{background:linear-gradient(135deg,var(--a1),var(--a2));color:#fff;box-shadow:0 4px 14px -6px var(--a1)}
+main.swap{animation:langSwap .35s ease}
+@keyframes langSwap{from{opacity:.25;transform:translateY(6px)}}
+</style>
+</head>
+<body>
+<div id="progress"></div>
+<div class="bg"><div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div></div>
+<div class="grid-bg"></div>
+
+<header>
+  <div class="logo"><span></span><span></span><span></span><span></span></div>
+  <h1><span data-i18n="h1"></span> <span class="grad">Windows</span></h1>
+  <p class="sub" data-i18n="sub"></p>
+  <div class="stats">
+    <div class="stat"><b data-count="apps">0</b><small data-i18n="statApps"></small></div>
+    <div class="stat"><b data-count="keys">0</b><small data-i18n="statKeys"></small></div>
+    <div class="stat"><b data-count="secs">0</b><small data-i18n="statSecs"></small></div>
+  </div>
+</header>
+
+<nav>
+  <div class="nav-in">
+    <div class="tabs" id="tabs"></div>
+    <label class="search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="q" type="search" data-i18n-ph="searchPh" autocomplete="off">
+    </label>
+    <div class="lang" id="lang" role="group" aria-label="Language">
+      <button type="button" data-l="en">EN</button><button type="button" data-l="uk">UA</button><button type="button" data-l="ru">RU</button>
+    </div>
+    <button class="edit" id="editBtn" data-i18n-title="editTitle"></button>
+    <button class="theme" id="theme" data-i18n-title="themeTitle">☾</button>
+  </div>
+  <div class="editbar">
+    <span id="editInfo"></span>
+    <div class="btns">
+      <button class="btn" id="expBtn" data-i18n="exp" data-i18n-title="expTitle"></button>
+      <button class="btn" id="impBtn" data-i18n="imp" data-i18n-title="impTitle"></button>
+      <button class="btn danger" id="resetBtn" data-i18n="reset" data-i18n-title="resetTitle"></button>
+    </div>
+    <input type="file" id="impFile" accept=".json,application/json" hidden>
+  </div>
+</nav>
+
+<main id="main"></main>
+<div class="empty" id="empty" data-i18n="empty"></div>
+
+<div class="upd" id="upd" hidden>
+  <span><span data-i18n="updText"></span> <b id="updVer"></b></span>
+  <a class="btn dl" id="updLink" href="#" target="_blank" rel="noopener"><span class="ic">⬇</span><span data-i18n="download"></span></a>
+  <button class="upd-x" id="updX" type="button" data-i18n-title="hide">✕</button>
+</div>
+
+<footer><span data-i18n="footer"></span><br><span id="ver"></span></footer>
+<button class="top" id="top" data-i18n-title="toTop">↑</button>
+<div class="toast" id="toast" role="status"></div>
+
+<dialog id="addDlg">
+  <form id="addForm" novalidate>
+    <h2 data-i18n="dlgTitle"></h2>
+    <label><span data-i18n="dlgSrc"></span>
+      <input name="src" placeholder="https://github.com/microsoft/PowerToys" autocomplete="off" required>
+    </label>
+    <div class="hint" id="ghHint"></div>
+    <label><span data-i18n="dlgName"></span><input name="n" autocomplete="off" required></label>
+    <label><span data-i18n="dlgDesc"></span><input name="d" maxlength="90" autocomplete="off" data-i18n-ph="dlgDescPh"></label>
+    <div class="row">
+      <label><span data-i18n="dlgSec"></span><select name="sec"></select></label>
+      <label><span data-i18n="dlgGroup"></span><select name="group"></select></label>
+    </div>
+    <label id="newGroupL" hidden><span data-i18n="dlgNewGroup"></span><input name="newGroup" autocomplete="off"></label>
+    <div class="err" id="addErr"></div>
+    <div class="dlg-acts">
+      <button type="button" class="btn" id="addCancel" data-i18n="cancel"></button>
+      <button type="submit" class="btn dl" data-i18n="add"></button>
+    </div>
+  </form>
+</dialog>
+
+<script>
+(() => {
+// ===== settings ==========================================================================
+const REPO = "barnibeats/windows-toolbox-releases";   // public showcase repo with app releases (source repo is private)
+const EDITING_ENABLED = false;                // true → the edit button and personal edits are back
+const DEFAULT_LANG = "en";                    // used until the visitor picks a language
+// ========================================================================================
+const GH = "https://github.com/";
+const LANGS = ["en", "uk", "ru"];
+
+// ----- interface strings -----------------------------------------------------------------
+const UI = {
+ en: {
+  h1: "The best for", sub: "Open-source apps from GitHub, hidden features and handy commands: personalization, gaming, administration and fine-tuning your system.",
+  statApps: "apps", statKeys: "hotkeys", statSecs: "sections", searchPh: "Search apps…",
+  editTitle: "Remove or add cards", edit: "✎ Edit", done: "✓ Done", themeTitle: "Toggle theme",
+  exp: "⇩ Export", expTitle: "Save your changes to a file", imp: "⇧ Import", impTitle: "Load changes from a file",
+  reset: "↺ Reset", resetTitle: "Restore the original list", empty: "Nothing found 🤷",
+  updText: "✨ A new version of the app is available", download: "Download", hide: "Hide", toTop: "Back to top",
+  footer: "Always check the date of the latest release in the repository before installing.",
+  appVersion: "App v{0}",
+  dlgTitle: "New app", dlgSrc: "GitHub link or “owner/repository”", dlgName: "Name", dlgDesc: "Description",
+  dlgDescPh: "In short: what the app does", dlgSec: "Section", dlgGroup: "Group", dlgNewGroup: "New group name",
+  newGroupOpt: "＋ New group…", cancel: "Cancel", add: "Add",
+  github: "GitHub", site: "Website", dl: "Download", dlTitle: "Download the latest Windows version",
+  dlBusy: "Looking…", dlOk: "Downloading", dlOpen: "Opened", mb: "MB",
+  nSite: "No GitHub releases — opening the download site", nOrg: "Pick a repository on the organization page",
+  nLimit: "GitHub API limit reached — opening releases", nNoWin: "No ready-made Windows file — opening releases",
+  nOffline: "Can't reach the GitHub API — opening releases",
+  hotkeys: "Hotkeys", hidden: "Hidden features", cmds: "Handy commands (terminal as administrator)",
+  copy: "Copy", copied: "Copied ✓", mine: "mine", removeCard: "Remove card",
+  editHint: "Click ✕ on a card to remove it, or “+” to add an app", editStats: "Your changes: {0} removed, {1} added",
+  addCard: "Add app", removed: "Removed: {0}", added: "Added: {0}", undo: "Undo",
+  exported: "toolbox-edits.json saved to Downloads", importErr: "Couldn't read the file — is it an export from this app?",
+  resetNone: "No changes — the list is already original", resetConfirm: "Restore the original list? Removed cards come back, cards you added are deleted.",
+  ghLooking: "Looking it up on GitHub…", gh404: "Repository not found — check the link", ghFail: "GitHub didn't respond, fill in the fields manually",
+  ghOffline: "No connection to GitHub, fill in the fields manually", ghPlain: "Plain link: the Download button will open this site", archived: "archived",
+  errSrc: "Enter a GitHub link, “owner/repository” or a website address", errName: "Enter a name", errGroup: "Enter a name for the new group",
+  errDup: "“{0}” is already on the page", addedManually: "Added manually"
+ },
+ uk: {
+  h1: "Найкраще для", sub: "Програми з відкритим кодом з GitHub, приховані функції та корисні команди: персоналізація, ігри, адміністрування й тонке налаштування системи.",
+  statApps: "програм", statKeys: "гарячих клавіш", statSecs: "розділів", searchPh: "Пошук програми…",
+  editTitle: "Прибрати або додати картки", edit: "✎ Редагувати", done: "✓ Готово", themeTitle: "Змінити тему",
+  exp: "⇩ Експорт", expTitle: "Зберегти ваші зміни у файл", imp: "⇧ Імпорт", impTitle: "Завантажити зміни з файлу",
+  reset: "↺ Скинути", resetTitle: "Повернути початковий список", empty: "Нічого не знайдено 🤷",
+  updText: "✨ Доступна нова версія застосунку", download: "Завантажити", hide: "Сховати", toTop: "Нагору",
+  footer: "Перед встановленням перевірте дату останнього релізу в репозиторії.",
+  appVersion: "Застосунок v{0}",
+  dlgTitle: "Нова програма", dlgSrc: "Посилання на GitHub або «власник/репозиторій»", dlgName: "Назва", dlgDesc: "Опис",
+  dlgDescPh: "Коротко: що робить програма", dlgSec: "Розділ", dlgGroup: "Група", dlgNewGroup: "Назва нової групи",
+  newGroupOpt: "＋ Нова група…", cancel: "Скасувати", add: "Додати",
+  github: "GitHub", site: "Сайт", dl: "Завантажити", dlTitle: "Завантажити останню версію для Windows",
+  dlBusy: "Шукаю файл…", dlOk: "Завантажується", dlOpen: "Відкрито", mb: "МБ",
+  nSite: "Немає релізів на GitHub — відкриваю сайт завантаження", nOrg: "Оберіть репозиторій на сторінці організації",
+  nLimit: "Ліміт GitHub API вичерпано — відкриваю релізи", nNoWin: "Готового файлу для Windows немає — відкриваю релізи",
+  nOffline: "Немає зв'язку з GitHub API — відкриваю релізи",
+  hotkeys: "Гарячі клавіші", hidden: "Приховані функції", cmds: "Корисні команди (термінал від імені адміністратора)",
+  copy: "Копіювати", copied: "Скопійовано ✓", mine: "моє", removeCard: "Прибрати картку",
+  editHint: "Натисніть ✕ на картці, щоб прибрати її, або «+», щоб додати програму", editStats: "Ваші зміни: прибрано {0}, додано {1}",
+  addCard: "Додати програму", removed: "Прибрано: {0}", added: "Додано: {0}", undo: "Скасувати",
+  exported: "Файл toolbox-edits.json збережено в «Завантаження»", importErr: "Не вдалося прочитати файл — це точно експорт із цього застосунку?",
+  resetNone: "Змін немає — список уже початковий", resetConfirm: "Повернути початковий список? Прибрані картки повернуться, додані вами — видаляться.",
+  ghLooking: "Шукаю на GitHub…", gh404: "Репозиторій не знайдено — перевірте посилання", ghFail: "GitHub не відповів, заповніть поля вручну",
+  ghOffline: "Немає зв'язку з GitHub, заповніть поля вручну", ghPlain: "Звичайне посилання: кнопка «Завантажити» відкриє цей сайт", archived: "архівовано",
+  errSrc: "Вкажіть посилання на GitHub, «власник/репозиторій» або адресу сайту", errName: "Введіть назву", errGroup: "Введіть назву нової групи",
+  errDup: "«{0}» уже є на сторінці", addedManually: "Додано вручну"
+ },
+ ru: {
+  h1: "Лучшее для", sub: "Открытые программы с GitHub, скрытые функции и полезные команды: персонализация, игры, администрирование и тонкая настройка системы.",
+  statApps: "программ", statKeys: "горячих клавиш", statSecs: "разделов", searchPh: "Поиск программы…",
+  editTitle: "Убрать или добавить карточки", edit: "✎ Редактировать", done: "✓ Готово", themeTitle: "Сменить тему",
+  exp: "⇩ Экспорт", expTitle: "Сохранить ваши изменения в файл", imp: "⇧ Импорт", impTitle: "Загрузить изменения из файла",
+  reset: "↺ Сбросить", resetTitle: "Вернуть исходный список", empty: "Ничего не найдено 🤷",
+  updText: "✨ Доступна новая версия приложения", download: "Скачать", hide: "Скрыть", toTop: "Наверх",
+  footer: "Перед установкой проверьте дату последнего релиза в репозитории.",
+  appVersion: "Приложение v{0}",
+  dlgTitle: "Новая программа", dlgSrc: "Ссылка на GitHub или «владелец/репозиторий»", dlgName: "Название", dlgDesc: "Описание",
+  dlgDescPh: "Коротко: что делает программа", dlgSec: "Раздел", dlgGroup: "Группа", dlgNewGroup: "Название новой группы",
+  newGroupOpt: "＋ Новая группа…", cancel: "Отмена", add: "Добавить",
+  github: "GitHub", site: "Сайт", dl: "Скачать", dlTitle: "Скачать последнюю версию для Windows",
+  dlBusy: "Ищу файл…", dlOk: "Скачивается", dlOpen: "Открыто", mb: "МБ",
+  nSite: "Нет релизов на GitHub — открываю сайт загрузки", nOrg: "Выберите репозиторий на странице организации",
+  nLimit: "Лимит GitHub API исчерпан — открываю релизы", nNoWin: "Готового файла для Windows нет — открываю релизы",
+  nOffline: "Нет связи с GitHub API — открываю релизы",
+  hotkeys: "Горячие клавиши", hidden: "Скрытые функции", cmds: "Полезные команды (терминал от администратора)",
+  copy: "Копировать", copied: "Скопировано ✓", mine: "моё", removeCard: "Убрать карточку",
+  editHint: "Нажмите ✕ на карточке, чтобы убрать её, или «+», чтобы добавить программу", editStats: "Ваши изменения: убрано {0}, добавлено {1}",
+  addCard: "Добавить программу", removed: "Убрано: {0}", added: "Добавлено: {0}", undo: "Отменить",
+  exported: "Файл toolbox-edits.json сохранён в «Загрузки»", importErr: "Не получилось прочитать файл — это точно экспорт из этого приложения?",
+  resetNone: "Изменений нет — список уже исходный", resetConfirm: "Вернуть исходный список? Убранные карточки вернутся, добавленные вами — удалятся.",
+  ghLooking: "Ищу на GitHub…", gh404: "Репозиторий не найден — проверьте ссылку", ghFail: "GitHub не ответил, заполните поля вручную",
+  ghOffline: "Нет связи с GitHub, заполните поля вручную", ghPlain: "Обычная ссылка: кнопка «Скачать» откроет этот сайт", archived: "архивирован",
+  errSrc: "Укажите ссылку на GitHub, «владелец/репозиторий» или адрес сайта", errName: "Введите название", errGroup: "Введите название новой группы",
+  errDup: "«{0}» уже есть на странице", addedManually: "Добавлено вручную"
+ }
+};
+
+let lang = DEFAULT_LANG;
+try { const s = localStorage.getItem("toolbox.lang"); if (LANGS.includes(s)) lang = s; } catch {}
+const T = (k, ...a) => (UI[lang][k] ?? UI.en[k] ?? k).replace(/\{(\d)\}/g, (_, i) => a[i]);
+const L = o => typeof o === "string" ? o : (o[lang] ?? o.en ?? o.ru);   // {en, uk, ru} → current language
+
+// ----- catalog ---------------------------------------------------------------------------
+// One app per line: ["Name", "owner/repo" or full URL, "описание (ru)", "опис (uk)", "description (en)"]
+// A missing translation falls back to the Russian text.
+const DATA = [
+ {id:"custom", icon:"🎨", title:{en:"Personalization", uk:"Персоналізація", ru:"Персонализация"},
+  desc:{en:"Look and feel: taskbar, wallpapers and widgets.", uk:"Зовнішній вигляд, панель завдань, шпалери та віджети.", ru:"Внешний вид, панель задач, обои и виджеты."}, groups:[
+  {name:{en:"Shell & taskbar", uk:"Оболонка та панель завдань", ru:"Оболочка и панель задач"}, items:[
+   ["Windhawk","ramensoftware/windhawk","Магазин модов: панель задач, «Пуск», трей, часы","Магазин модів: панель завдань, «Пуск», трей, годинник","Mod store: taskbar, Start menu, tray, clock"],
+   ["ExplorerPatcher","valinet/ExplorerPatcher","Панель задач и «Пуск» из Windows 10 в Windows 11","Панель завдань і «Пуск» з Windows 10 у Windows 11","Windows 10 taskbar and Start menu on Windows 11"],
+   ["Seelen UI","eythaann/Seelen-UI","Замена оболочки: док, верхняя панель, тайлинг","Заміна оболонки: док, верхня панель, тайлінг","Shell replacement: dock, top bar, tiling"],
+   ["YASB","amnweb/yasb","Настраиваемая статус-панель в стиле Linux","Налаштовувана статус-панель у стилі Linux","Customizable Linux-style status bar"],
+   ["GlazeWM","glzr-io/glazewm","Тайлинговый оконный менеджер, как i3","Тайлінговий віконний менеджер, як i3","i3-like tiling window manager"],
+   ["Komorebi","LGUG2Z/komorebi","Ещё один тайлинговый оконный менеджер","Ще один тайлінговий віконний менеджер","Another tiling window manager"],
+   ["TranslucentTB","TranslucentTB/TranslucentTB","Прозрачная панель задач","Прозора панель завдань","Transparent taskbar"],
+   ["RoundedTB","RoundedTB/RoundedTB","Скруглённая «плавающая» панель задач","Заокруглена «плаваюча» панель завдань","Rounded floating taskbar"],
+   ["Zebar","glzr-io/zebar","Настраиваемый статус-бар, пара для GlazeWM","Налаштовуваний статус-бар, пара до GlazeWM","Customizable status bar, pairs with GlazeWM"],
+   ["Taskbar Groups","tjackenpacken/taskbar-groups","Папки-группы ярлыков на панели задач","Групи ярликів на панелі завдань","Shortcut groups pinned to the taskbar"],
+   ["FluentFlyout","unchihugo/FluentFlyout","Медиа-окно громкости в стиле Windows 11","Медіавікно гучності у стилі Windows 11","Windows 11-style media and volume flyout"],
+   ["ModernFlyouts","ModernFlyouts-Community/ModernFlyouts","Современные всплывающие окна громкости и яркости","Сучасні спливаючі вікна гучності та яскравості","Modern volume and brightness flyouts"]]},
+  {name:{en:"Wallpapers, widgets, theming", uk:"Шпалери, віджети, оформлення", ru:"Обои, виджеты, оформление"}, items:[
+   ["Lively Wallpaper","rocksdanister/lively","Живые обои: видео, веб-страницы, шейдеры","Живі шпалери: відео, вебсторінки, шейдери","Live wallpapers: video, web pages, shaders"],
+   ["WinDynamicDesktop","t1m0thyj/WinDynamicDesktop","Обои по времени суток, как в macOS","Шпалери за часом доби, як у macOS","macOS-style wallpapers that follow the time of day"],
+   ["Rainmeter","rainmeter/rainmeter","Виджеты на рабочем столе","Віджети на робочому столі","Desktop widgets"],
+   ["Nilesoft Shell","moudey/Shell","Красивое контекстное меню","Гарне контекстне меню","Beautiful, customizable context menu"],
+   ["Mica For Everyone","MicaForEveryone/MicaForEveryone","Эффект Mica/Acrylic для любых окон","Ефект Mica/Acrylic для будь-яких вікон","Mica/Acrylic effect for any window"],
+   ["Auto Dark Mode","AutoDarkMode/Windows-Auto-Night-Mode","Светлая и тёмная тема по расписанию","Світла й темна тема за розкладом","Switches light/dark theme on a schedule"],
+   ["Spicetify","spicetify/cli","Темы и плагины для Spotify","Теми та плагіни для Spotify","Themes and extensions for Spotify"]]},
+  {name:{en:"Convenience", uk:"Зручність", ru:"Удобство"}, items:[
+   ["Flow Launcher","Flow-Launcher/Flow.Launcher","Быстрый поиск и запуск, аналог Spotlight","Швидкий пошук і запуск, аналог Spotlight","Quick search and launcher, like Spotlight"],
+   ["PowerToys","microsoft/PowerToys","Утилиты Microsoft: FancyZones, пипетка и др.","Утиліти Microsoft: FancyZones, піпетка тощо","Microsoft utilities: FancyZones, color picker and more"],
+   ["Files","files-community/Files","Современный проводник с вкладками","Сучасний провідник із вкладками","Modern file manager with tabs"],
+   ["EarTrumpet","File-New-Project/EarTrumpet","Микшер громкости для каждого приложения","Мікшер гучності для кожної програми","Per-app volume mixer"],
+   ["Twinkle Tray","xanderfrangos/twinkle-tray","Яркость внешних мониторов из трея","Яскравість зовнішніх моніторів із трею","External monitor brightness from the tray"]]}
+ ]},
+ {id:"games", icon:"🎮", title:{en:"For gamers", uk:"Для геймерів", ru:"Для геймеров"},
+  desc:{en:"Launchers, graphics, hardware, controllers and emulators.", uk:"Лаунчери, графіка, залізо, геймпади та емулятори.", ru:"Лаунчеры, графика, железо, геймпады и эмуляторы."}, groups:[
+  {name:{en:"Launchers", uk:"Лаунчери", ru:"Лаунчеры"}, items:[
+   ["Playnite","JosefNemec/Playnite","Одна библиотека для всех лаунчеров и эмуляторов","Одна бібліотека для всіх лаунчерів та емуляторів","One library for all launchers and emulators"],
+   ["Heroic Games Launcher","Heroic-Games-Launcher/HeroicGamesLauncher","Открытый лаунчер для Epic, GOG, Amazon","Відкритий лаунчер для Epic, GOG, Amazon","Open-source launcher for Epic, GOG, Amazon"],
+   ["Steam ROM Manager","SteamGridDB/steam-rom-manager","Эмуляторные игры в Steam с обложками","Емуляторні ігри в Steam з обкладинками","Adds emulated games to Steam with artwork"],
+   ["Bloxstrap","bloxstraplabs/bloxstrap","Лаунчер Roblox с FPS-анлокером","Лаунчер Roblox з FPS-анлокером","Roblox launcher with FPS unlocker"],
+   ["Millennium","SteamClientHomebrew/Millennium","Темы и плагины для клиента Steam","Теми та плагіни для клієнта Steam","Themes and plugins for the Steam client"]]},
+  {name:{en:"Mods, saves, achievements", uk:"Моди, збереження, досягнення", ru:"Моды, сохранения, достижения"}, items:[
+   ["Vortex","Nexus-Mods/Vortex","Менеджер модов от Nexus Mods","Менеджер модів від Nexus Mods","Mod manager by Nexus Mods"],
+   ["Mod Organizer 2","ModOrganizer2/modorganizer","Моды без изменения папки игры (Skyrim, Fallout)","Моди без зміни теки гри (Skyrim, Fallout)","Mods without touching the game folder (Skyrim, Fallout)"],
+   ["r2modman","ebkr/r2modmanPlus","Моды для Unity-игр: Lethal Company, Valheim","Моди для Unity-ігор: Lethal Company, Valheim","Mods for Unity games: Lethal Company, Valheim"],
+   ["Ludusavi","mtkennerly/ludusavi","Бэкап сохранений сотен игр одной кнопкой","Бекап збережень сотень ігор однією кнопкою","One-click save backup for hundreds of games"],
+   ["Steam Achievement Manager","gibbed/SteamAchievementManager","Управление достижениями Steam","Керування досягненнями Steam","Manage Steam achievements"]]},
+  {name:{en:"Graphics & FPS", uk:"Графіка та FPS", ru:"Графика и FPS"}, items:[
+   ["ReShade","crosire/reshade","Шейдеры и цветокоррекция в играх","Шейдери та кольорокорекція в іграх","In-game shaders and color grading"],
+   ["Special K","SpecialKO/SpecialK","HDR, лимит FPS, фиксы для портов","HDR, ліміт FPS, фікси для портів","HDR, FPS limiter, fixes for bad ports"],
+   ["OptiScaler","cdozdil/OptiScaler","DLSS → FSR/XeSS для AMD и Intel","DLSS → FSR/XeSS для AMD та Intel","DLSS → FSR/XeSS for AMD and Intel GPUs"],
+   ["Magpie","Blinue/Magpie","Апскейл любого окна через FSR/Anime4K","Апскейл будь-якого вікна через FSR/Anime4K","Upscale any window with FSR/Anime4K"],
+   ["NVIDIA Profile Inspector","Orbmu2k/nvidiaProfileInspector","Скрытые настройки драйвера NVIDIA","Приховані налаштування драйвера NVIDIA","Hidden NVIDIA driver settings"],
+   ["CapFrameX","CXWorld/CapFrameX","Замер FPS и frametime","Вимірювання FPS і frametime","FPS and frametime capture and analysis"],
+   ["Borderless Gaming","Codeusa/Borderless-Gaming","Оконный режим без рамок","Віконний режим без рамок","Force borderless windowed mode"],
+   ["DXVK","doitsujin/dxvk","Vulkan вместо DirectX 9–11, спасает старые игры","Vulkan замість DirectX 9–11, рятує старі ігри","Vulkan instead of DirectX 9–11, rescues old games"],
+   ["PresentMon","GameTechDev/PresentMon","Оверлей и замер задержек от Intel","Оверлей і вимірювання затримок від Intel","Intel's overlay and latency measurement"]]},
+  {name:{en:"Hardware & input", uk:"Залізо та введення", ru:"Железо и ввод"}, items:[
+   ["Fan Control","Rem0o/FanControl.Releases","Кривые вентиляторов","Криві вентиляторів","Custom fan curves"],
+   ["LibreHardwareMonitor","LibreHardwareMonitor/LibreHardwareMonitor","Температуры, частоты, нагрузка","Температури, частоти, навантаження","Temperatures, clocks, load"],
+   ["OpenRGB","https://gitlab.com/CalcProgrammer1/OpenRGB","Подсветка любых брендов (GitLab)","Підсвітка будь-яких брендів (GitLab)","RGB control for any brand (GitLab)"],
+   ["Raw Accel","a1xd/rawaccel","Кривые ускорения мыши","Криві прискорення миші","Mouse acceleration curves"],
+   ["DS4Windows","schmaldeo/DS4Windows","DualShock и DualSense на ПК","DualShock і DualSense на ПК","DualShock and DualSense on PC"],
+   ["Handheld Companion","Valkirie/HandheldCompanion","Для ROG Ally, Legion Go и др.","Для ROG Ally, Legion Go тощо","For ROG Ally, Legion Go and other handhelds"],
+   ["SoundSwitch","Belphemur/SoundSwitch","Переключение аудиоустройств хоткеем","Перемикання аудіопристроїв гарячою клавішею","Switch audio devices with a hotkey"],
+   ["AntiMicroX","AntiMicroX/antimicrox","Геймпад как клавиатура и мышь","Геймпад як клавіатура й миша","Map a gamepad to keyboard and mouse"],
+   ["x360ce","x360ce/x360ce","Любой геймпад как Xbox-контроллер","Будь-який геймпад як Xbox-контролер","Any gamepad as an Xbox controller"]]},
+  {name:{en:"Streaming & playing with friends", uk:"Стрімінг і гра з друзями", ru:"Стриминг и игра с друзьями"}, items:[
+   ["Sunshine","LizardByte/Sunshine","Сервер стриминга игр с ПК","Сервер стрімінгу ігор з ПК","Game streaming host for your PC"],
+   ["Apollo","ClassicOldSong/Apollo","Форк Sunshine с виртуальным дисплеем","Форк Sunshine з віртуальним дисплеєм","Sunshine fork with a virtual display"],
+   ["Moonlight","moonlight-stream","Клиент для телефона, ТВ, ноутбука","Клієнт для телефона, ТВ, ноутбука","Client for phone, TV, laptop"],
+   ["OBS Studio","obsproject/obs-studio","Запись и стриминг","Запис і стрімінг","Recording and streaming"],
+   ["ZeroTier","zerotier/ZeroTierOne","Виртуальная локальная сеть для игр по LAN","Віртуальна локальна мережа для ігор по LAN","Virtual LAN for playing LAN games online"],
+   ["Tailscale","tailscale/tailscale","Простая VPN-сеть между своими устройствами","Проста VPN-мережа між своїми пристроями","Easy VPN mesh between your devices"]]},
+  {name:{en:"Emulators", uk:"Емулятори", ru:"Эмуляторы"}, items:[
+   ["RetroArch","libretro/RetroArch","Мультисистемный","Мультисистемний","Multi-system"],
+   ["DuckStation","stenzek/duckstation","PlayStation 1","PlayStation 1","PlayStation 1"],
+   ["PCSX2","PCSX2/pcsx2","PlayStation 2","PlayStation 2","PlayStation 2"],
+   ["RPCS3","RPCS3/rpcs3","PlayStation 3","PlayStation 3","PlayStation 3"],
+   ["PPSSPP","hrydgard/ppsspp","PSP","PSP","PSP"],
+   ["Dolphin","dolphin-emu/dolphin","GameCube и Wii","GameCube і Wii","GameCube and Wii"],
+   ["Cemu","cemu-project/Cemu","Wii U","Wii U","Wii U"],
+   ["mGBA","mgba-emu/mgba","Game Boy Advance","Game Boy Advance","Game Boy Advance"],
+   ["melonDS","melonDS-emu/melonDS","Nintendo DS","Nintendo DS","Nintendo DS"],
+   ["Azahar","azahar-emu/azahar","Nintendo 3DS (наследник Citra)","Nintendo 3DS (наступник Citra)","Nintendo 3DS (Citra successor)"],
+   ["Vita3K","Vita3K/Vita3K","PlayStation Vita","PlayStation Vita","PlayStation Vita"],
+   ["shadPS4","shadps4-emu/shadPS4","PlayStation 4 (ранняя стадия)","PlayStation 4 (рання стадія)","PlayStation 4 (early stage)"],
+   ["xemu","xemu-project/xemu","Оригинальный Xbox","Оригінальний Xbox","Original Xbox"],
+   ["Xenia","xenia-project/xenia","Xbox 360","Xbox 360","Xbox 360"]]}
+ ]},
+ {id:"tricks", icon:"✨", title:{en:"Windows tricks", uk:"Фішки Windows", ru:"Фишки Windows"},
+  desc:{en:"All of this is already built into Windows.", uk:"Усе це вже вбудовано в систему.", ru:"Всё это уже встроено в систему."}, special:"tricks"},
+ {id:"more", icon:"🧩", title:{en:"More useful stuff", uk:"Ще корисне", ru:"Ещё полезное"},
+  desc:{en:"Everyday convenience, terminal and tools.", uk:"Зручність, термінал та інструменти на щодень.", ru:"Удобство, терминал и инструменты на каждый день."}, groups:[
+  {name:{en:"Convenience", uk:"Зручність", ru:"Удобство"}, items:[
+   ["QuickLook","QL-Win/QuickLook","Предпросмотр файла по пробелу","Перегляд файлу по пробілу","Preview files with the spacebar"],
+   ["ShareX","ShareX/ShareX","Скриншоты, GIF, OCR, загрузка в облако","Скриншоти, GIF, OCR, завантаження в хмару","Screenshots, GIFs, OCR, cloud upload"],
+   ["ScreenToGif","NickeManarin/ScreenToGif","Запись экрана в GIF","Запис екрана в GIF","Record the screen to GIF"],
+   ["AltSnap","RamonUnch/AltSnap","Перетаскивание окон с Alt","Перетягування вікон з Alt","Move and resize windows with Alt"],
+   ["LocalSend","localsend/localsend","Обмен файлами по Wi-Fi, аналог AirDrop","Обмін файлами по Wi-Fi, аналог AirDrop","Share files over Wi-Fi, like AirDrop"],
+   ["UniGetUI","marticliment/UniGetUI","Графический магазин для winget/Scoop/Choco","Графічний магазин для winget/Scoop/Choco","GUI store for winget/Scoop/Choco"],
+   ["NanaZip","M2Team/NanaZip","Современный 7-Zip","Сучасний 7-Zip","Modern 7-Zip"],
+   ["ImageGlass","d2phap/ImageGlass","Просмотрщик картинок","Переглядач зображень","Image viewer"],
+   ["Ambie","jenius-apps/ambie","Фоновые звуки для концентрации","Фонові звуки для концентрації","Ambient sounds for focus"]]},
+  {name:{en:"Terminal", uk:"Термінал", ru:"Терминал"}, items:[
+   ["Windows Terminal","microsoft/terminal","Терминал с вкладками","Термінал із вкладками","Tabbed terminal"],
+   ["Oh My Posh","JanDeDobbeleer/oh-my-posh","Стильная командная строка","Стильний командний рядок","Stylish prompt"],
+   ["Fastfetch","fastfetch-cli/fastfetch","Инфо о системе с ASCII-логотипом","Інфо про систему з ASCII-логотипом","System info with an ASCII logo"],
+   ["Clink","chrisant996/clink","Автодополнение и история как в bash для cmd","Автодоповнення та історія як у bash для cmd","Bash-style completion and history for cmd"],
+   ["Starship","starship/starship","Быстрый и красивый промпт для любой оболочки","Швидкий і гарний промпт для будь-якої оболонки","Fast, pretty prompt for any shell"],
+   ["btop4win","aristocratos/btop4win","Красивый монитор ресурсов в терминале","Гарний монітор ресурсів у терміналі","Beautiful resource monitor in the terminal"]]}
+ ]},
+ {id:"utils", icon:"🔧", title:{en:"Utilities", uk:"Утиліти", ru:"Утилиты"},
+  desc:{en:"Laptops, automation, files, backups and replacements for built-in apps.", uk:"Ноутбуки, автоматизація, файли, бекапи та заміни стандартних програм.", ru:"Ноутбуки, автоматизация, файлы, бэкапы и замены стандартных программ."}, groups:[
+  {name:{en:"Laptops: vendor software replacements", uk:"Ноутбуки: заміна фірмового софту", ru:"Ноутбуки: замена фирменного софта"}, items:[
+   ["G-Helper","seerge/g-helper","Лёгкая замена Armoury Crate для ASUS","Легка заміна Armoury Crate для ASUS","Lightweight Armoury Crate replacement for ASUS"],
+   ["Lenovo Legion Toolkit","BartoszCichecki/LenovoLegionToolkit","Замена Lenovo Vantage для Legion","Заміна Lenovo Vantage для Legion","Lenovo Vantage replacement for Legion"],
+   ["NoteBook FanControl","hirschmann/nbfc","Управление вентиляторами ноутбуков","Керування вентиляторами ноутбуків","Laptop fan control"],
+   ["Universal x86 Tuning Utility","JamesCJ60/Universal-x86-Tuning-Utility","TDP и андервольт для Intel и AMD","TDP і андервольт для Intel та AMD","TDP and undervolting for Intel and AMD"],
+   ["AlienFX Tools","T-Troll/alienfx-tools","Подсветка и вентиляторы Alienware/Dell","Підсвітка та вентилятори Alienware/Dell","Lighting and fans for Alienware/Dell"]]},
+  {name:{en:"Automation & keyboard", uk:"Автоматизація та клавіатура", ru:"Автоматизация и клавиатура"}, items:[
+   ["AutoHotkey","AutoHotkey/AutoHotkey","Скрипты, макросы и свои горячие клавиши","Скрипти, макроси та власні гарячі клавіші","Scripts, macros and custom hotkeys"],
+   ["Espanso","espanso/espanso","Автозамена текста: :mail → ваш email","Автозаміна тексту: :mail → ваш email","Text expander: :mail → your email"],
+   ["Kanata","jtroo/kanata","Продвинутое переназначение клавиш, слои","Просунуте перепризначення клавіш, шари","Advanced key remapping with layers"],
+   ["SharpKeys","randyrants/sharpkeys","Простое переназначение клавиш через реестр","Просте перепризначення клавіш через реєстр","Simple key remapping via the registry"],
+   ["Ditto","sabrogden/Ditto","Менеджер буфера обмена с поиском","Менеджер буфера обміну з пошуком","Clipboard manager with search"],
+   ["Mouse Jiggler","arkane-systems/mousejiggler","Не даёт ПК уйти в сон и статус «отошёл»","Не дає ПК заснути й перейти в статус «відійшов»","Keeps the PC awake and your status “online”"]]},
+  {name:{en:"Files, sync, backup", uk:"Файли, синхронізація, бекап", ru:"Файлы, синхронизация, бэкап"}, items:[
+   ["Czkawka","qarmin/czkawka","Поиск дубликатов, похожих фото, мусора","Пошук дублікатів, схожих фото, сміття","Find duplicates, similar photos, junk"],
+   ["BleachBit","bleachbit/bleachbit","Открытая альтернатива CCleaner","Відкрита альтернатива CCleaner","Open-source CCleaner alternative"],
+   ["Syncthing","syncthing/syncthing","Синхронизация папок между устройствами без облака","Синхронізація тек між пристроями без хмари","Sync folders between devices without a cloud"],
+   ["Kopia","kopia/kopia","Шифрованные бэкапы с дедупликацией","Шифровані бекапи з дедуплікацією","Encrypted, deduplicated backups"],
+   ["Duplicati","duplicati/duplicati","Бэкапы в облако по расписанию","Бекапи в хмару за розкладом","Scheduled backups to the cloud"],
+   ["rclone","rclone/rclone","Подключение облаков как диска, 70+ сервисов","Підключення хмар як диска, 70+ сервісів","Mount 70+ cloud services as a drive"]]},
+  {name:{en:"Better built-in apps", uk:"Заміни стандартних програм", ru:"Замены стандартных программ"}, items:[
+   ["Notepad++","notepad-plus-plus/notepad-plus-plus","Блокнот для профи с подсветкой кода","Блокнот для профі з підсвіткою коду","Pro text editor with syntax highlighting"],
+   ["SumatraPDF","sumatrapdfreader/sumatrapdf","Сверхбыстрый просмотр PDF, EPUB, DjVu","Надшвидкий перегляд PDF, EPUB, DjVu","Ultra-fast PDF, EPUB, DjVu reader"],
+   ["MPC-HC","clsid2/mpc-hc","Лёгкий видеоплеер, всеядный","Легкий всеїдний відеоплеєр","Lightweight player that plays anything"],
+   ["Screenbox","huynhsontung/Screenbox","Современный медиаплеер в стиле Windows 11","Сучасний медіаплеєр у стилі Windows 11","Modern Windows 11-style media player"],
+   ["Flameshot","flameshot-org/flameshot","Скриншоты с аннотациями","Скриншоти з анотаціями","Screenshots with annotations"],
+   ["Greenshot","greenshot/greenshot","Скриншоты для работы и документации","Скриншоти для роботи та документації","Screenshots for work and docs"]]}
+ ]},
+ {id:"admin", icon:"🛠️", title:{en:"For sysadmins", uk:"Для сисадміна", ru:"Для сисадмина"},
+  desc:{en:"Installing Windows, deployment, remote management and diagnostics.", uk:"Встановлення Windows, розгортання, віддалене керування та діагностика.", ru:"Установка Windows, развёртывание, удалённое управление и диагностика."}, groups:[
+  {name:{en:"Windows install & deployment", uk:"Встановлення та розгортання Windows", ru:"Установка и развёртывание Windows"}, items:[
+   ["Rufus","pbatard/rufus","Загрузочные флешки, обход TPM и учётки MS","Завантажувальні флешки, обхід TPM і облікового запису MS","Bootable USBs, bypass TPM and Microsoft account"],
+   ["Ventoy","ventoy/Ventoy","Мультизагрузочная флешка с ISO","Мультизавантажувальна флешка з ISO","Multiboot USB from plain ISO files"],
+   ["MediaCreationTool.bat","AveYo/MediaCreationTool.bat","Любая версия Windows с серверов MS","Будь-яка версія Windows із серверів MS","Any Windows version from Microsoft servers"],
+   ["UUP dump","uup-dump","ISO любой сборки из Windows Update","ISO будь-якої збірки з Windows Update","ISO of any build from Windows Update"],
+   ["Unattend Generator","cschneegans/unattend-generator","Генератор autounattend.xml","Генератор autounattend.xml","autounattend.xml generator"],
+   ["Dism++","Chuyu-Team/Dism-Multi-language","Образы, очистка, драйверы, бэкап","Образи, очищення, драйвери, бекап","Images, cleanup, drivers, backup"],
+   ["OSDCloud / OSD","OSDeploy/OSD","Развёртывание через PowerShell и WinPE","Розгортання через PowerShell і WinPE","Deployment via PowerShell and WinPE"],
+   ["FOG Project","FOGProject/fogproject","Сетевое клонирование через PXE","Мережеве клонування через PXE","Network imaging via PXE"],
+   ["PhoenixPE","PhoenixPE/PhoenixPE","Свой реанимационный WinPE","Власний реанімаційний WinPE","Build your own rescue WinPE"],
+   ["netboot.xyz","netbootxyz/netboot.xyz","PXE-меню установщиков","PXE-меню інсталяторів","PXE menu of installers"]]},
+  {name:{en:"Installing & updating software", uk:"Встановлення та оновлення програм", ru:"Установка и обновление программ"}, items:[
+   ["winget","microsoft/winget-cli","Официальный пакетный менеджер","Офіційний пакетний менеджер","Official package manager"],
+   ["Scoop","ScoopInstaller/Scoop","Пакеты без прав администратора","Пакети без прав адміністратора","Packages without admin rights"],
+   ["Chocolatey","chocolatey/choco","Пакетный менеджер для организаций","Пакетний менеджер для організацій","Package manager for organizations"],
+   ["Winget-AutoUpdate","Romanitho/Winget-AutoUpdate","Автообновление программ через GPO","Автооновлення програм через GPO","Auto-update apps, configurable via GPO"],
+   ["PSAppDeployToolkit","PSAppDeployToolkit/PSAppDeployToolkit","Тихая установка программ","Тихе встановлення програм","Silent app deployment"],
+   ["Bulk Crap Uninstaller","Klocman/Bulk-Crap-Uninstaller","Массовое удаление программ","Масове видалення програм","Bulk uninstall including leftovers"],
+   ["WuMgr","DavidXanatos/wumgr","Ручное управление обновлениями","Ручне керування оновленнями","Manual Windows Update control"]]},
+  {name:{en:"Console & access", uk:"Консоль і доступ", ru:"Консоль и доступ"}, items:[
+   ["PowerShell 7","PowerShell/PowerShell","Современный кроссплатформенный PowerShell","Сучасний кросплатформний PowerShell","Modern cross-platform PowerShell"],
+   ["WSL","microsoft/WSL","Linux внутри Windows, теперь с открытым кодом","Linux усередині Windows, тепер з відкритим кодом","Linux inside Windows, now open source"],
+   ["gsudo","gerardog/gsudo","sudo для Windows 10 и 11","sudo для Windows 10 і 11","sudo for Windows 10 and 11"],
+   ["Tabby","Eugeny/tabby","Терминал с SSH, Serial и менеджером сессий","Термінал з SSH, Serial і менеджером сесій","Terminal with SSH, serial and a session manager"],
+   ["WinSCP","winscp/winscp","SFTP, FTP, SCP-клиент","SFTP, FTP, SCP-клієнт","SFTP, FTP, SCP client"]]},
+  {name:{en:"Remote management & monitoring", uk:"Віддалене керування та моніторинг", ru:"Удалённое управление и мониторинг"}, items:[
+   ["RustDesk","rustdesk/rustdesk","Аналог TeamViewer со своим сервером","Аналог TeamViewer із власним сервером","Self-hostable TeamViewer alternative"],
+   ["MeshCentral","Ylianst/MeshCentral","Веб-панель для сотен ПК","Вебпанель для сотень ПК","Web console for hundreds of PCs"],
+   ["Tactical RMM","amidaware/tacticalrmm","Скрипты, патчи, алерты","Скрипти, патчі, алерти","Scripts, patching, alerts"],
+   ["mRemoteNG","mRemoteNG/mRemoteNG","RDP, SSH, VNC во вкладках","RDP, SSH, VNC у вкладках","RDP, SSH, VNC in tabs"],
+   ["NETworkManager","BornToBeRoot/NETworkManager","Комбайн сетевых утилит","Комбайн мережевих утиліт","All-in-one network toolkit"],
+   ["Angry IP Scanner","angryip/ipscan","Быстрый сканер сети","Швидкий сканер мережі","Fast network scanner"],
+   ["Zabbix","zabbix/zabbix","Мониторинг серверов и ПК","Моніторинг серверів і ПК","Server and PC monitoring"],
+   ["GLPI","glpi-project/glpi","Учёт оборудования и хелпдеск","Облік обладнання та хелпдеск","Asset inventory and helpdesk"],
+   ["Snipe-IT","snipe/snipe-it","Учёт IT-активов","Облік IT-активів","IT asset management"],
+   ["IntuneManagement","Micke-K/IntuneManagement","Экспорт настроек Intune","Експорт налаштувань Intune","Export and document Intune settings"],
+   ["Uptime Kuma","louislam/uptime-kuma","Красивый мониторинг доступности сервисов","Гарний моніторинг доступності сервісів","Beautiful uptime monitoring"],
+   ["OCS Inventory","OCSInventory-NG/OCSInventory-ocsreports","Автоинвентаризация ПК и софта","Автоінвентаризація ПК і софту","Automatic hardware and software inventory"],
+   ["UrBackup","uroni/urbackup_backend","Сетевой бэкап рабочих станций","Мережевий бекап робочих станцій","Network backup for workstations"]]},
+  {name:{en:"Network & security", uk:"Мережа та захист", ru:"Сеть и защита"}, items:[
+   ["simplewall","henrypp/simplewall","Удобное управление файрволом Windows","Зручне керування файрволом Windows","Easy Windows Firewall control"],
+   ["Portmaster","safing/portmaster","Файрвол приложений и блокировка трекеров","Файрвол застосунків і блокування трекерів","App firewall and tracker blocking"],
+   ["Sandboxie-Plus","sandboxie-plus/Sandboxie","Запуск подозрительных программ в песочнице","Запуск підозрілих програм у пісочниці","Run suspicious apps in a sandbox"],
+   ["VeraCrypt","veracrypt/VeraCrypt","Шифрование дисков и контейнеров","Шифрування дисків і контейнерів","Disk and container encryption"],
+   ["WireGuard","WireGuard/wireguard-windows","Быстрый современный VPN","Швидкий сучасний VPN","Fast modern VPN"],
+   ["AdGuard Home","AdguardTeam/AdGuardHome","Блокировка рекламы для всей сети","Блокування реклами для всієї мережі","Network-wide ad blocking"],
+   ["Wireshark","wireshark/wireshark","Анализ сетевого трафика","Аналіз мережевого трафіку","Network traffic analysis"],
+   ["Nmap","nmap/nmap","Сканер портов и сервисов","Сканер портів і сервісів","Port and service scanner"],
+   ["WinMTR","White-Tiger/WinMTR","Traceroute + ping: где теряются пакеты","Traceroute + ping: де губляться пакети","Traceroute + ping: find where packets get lost"],
+   ["Velociraptor","Velocidex/velociraptor","Расследование инцидентов на endpoint'ах","Розслідування інцидентів на endpoint'ах","Endpoint incident response and forensics"]]},
+  {name:{en:"Diagnostics & security", uk:"Діагностика та безпека", ru:"Диагностика и безопасность"}, items:[
+   ["System Informer","winsiderss/systeminformer","Продвинутый диспетчер задач","Просунутий диспетчер завдань","Advanced task manager"],
+   ["WinDirStat","windirstat/windirstat","Что занимает место на диске","Що займає місце на диску","See what fills your disk"],
+   ["CrystalDiskInfo","hiyohiyo/CrystalDiskInfo","Здоровье дисков по SMART","Стан дисків за SMART","Drive health via SMART"],
+   ["DriverStore Explorer","lostindark/DriverStoreExplorer","Чистка старых драйверов из хранилища","Очищення старих драйверів зі сховища","Clean old drivers out of the driver store"],
+   ["HardeningKitty","scipag/HardeningKitty","Аудит по CIS-бенчмаркам","Аудит за CIS-бенчмарками","Audit against CIS benchmarks"],
+   ["Harden Windows Security","HotCakeX/Harden-Windows-Security","Усиление защиты","Посилення захисту","Harden Windows security"],
+   ["PingCastle","vletoux/pingcastle","Аудит Active Directory","Аудит Active Directory","Active Directory security audit"],
+   ["Wazuh","wazuh/wazuh","Открытая SIEM/XDR","Відкрита SIEM/XDR","Open-source SIEM/XDR"],
+   ["KeePassXC","keepassxreboot/keepassxc","Менеджер паролей","Менеджер паролів","Password manager"],
+   ["Sysinternals Suite","https://learn.microsoft.com/sysinternals/","Autoruns, ProcMon, PsExec (не GitHub)","Autoruns, ProcMon, PsExec (не GitHub)","Autoruns, ProcMon, PsExec (not on GitHub)"]]}
+ ]},
+ {id:"tweak", icon:"⚙️", title:{en:"Windows tweaking", uk:"Налаштування Windows", ru:"Настройка Windows"},
+  desc:{en:"Tweakers, scripts, custom builds, policies and hidden features.", uk:"Твікери, скрипти, збірки, політики та приховані функції.", ru:"Твикеры, скрипты, сборки, политики и скрытые функции."}, groups:[
+  {name:{en:"GUI tweakers", uk:"Твікери з інтерфейсом", ru:"Твикеры с интерфейсом"}, items:[
+   ["WinUtil","ChrisTitusTech/winutil","Твики, программы, фикс Windows Update","Твіки, програми, фікс Windows Update","Tweaks, app installs, Windows Update fixes"],
+   ["SophiApp","Sophia-Community/SophiApp","100+ настроек с описаниями","100+ налаштувань з описами","100+ settings with explanations"],
+   ["Optimizer","hellzerg/optimizer","Телеметрия, службы, hosts, конфиги","Телеметрія, служби, hosts, конфіги","Telemetry, services, hosts, configs"],
+   ["xd-AntiSpy","builtbybel/xd-AntiSpy","Проверка настроек приватности","Перевірка налаштувань приватності","Privacy settings checker"],
+   ["OFGB","xM4ddy/OFGB","Убирает рекламу из Windows 11","Прибирає рекламу з Windows 11","Removes ads from Windows 11"],
+   ["WinSetView","LesFerch/WinSetView","Единый вид всех папок","Єдиний вигляд усіх тек","One view setting for all folders"],
+   ["ContextMenuManager","BluePointLilac/ContextMenuManager","Редактор контекстного меню","Редактор контекстного меню","Context menu editor"]]},
+  {name:{en:"PowerShell scripts", uk:"Скрипти PowerShell", ru:"Скрипты PowerShell"}, items:[
+   ["Sophia Script","farag2/Sophia-Script-for-Windows","Настройки построчно, с откатом","Налаштування порядково, з відкатом","Line-by-line tweaks with rollback"],
+   ["Win11Debloat","Raphire/Win11Debloat","Удаляет мусор, Copilot, Recall, рекламу","Видаляє сміття, Copilot, Recall, рекламу","Removes bloat, Copilot, Recall, ads"],
+   ["privacy.sexy","undergroundwires/privacy.sexy","Генератор скриптов приватности","Генератор скриптів приватності","Privacy script generator"],
+   ["Win-Debloat-Tools","LeDragoX/Win-Debloat-Tools","Деблоат и оптимизация","Деблоат і оптимізація","Debloat and optimization"],
+   ["WindowsSpyBlocker","crazy-max/WindowsSpyBlocker","Блок телеметрии через hosts/файрвол","Блок телеметрії через hosts/файрвол","Block telemetry via hosts/firewall"],
+   ["EdgeRemover","he3als/EdgeRemover","Удаление Microsoft Edge","Видалення Microsoft Edge","Cleanly remove Microsoft Edge"]]},
+  {name:{en:"Custom builds & playbooks", uk:"Збірки та плейбуки", ru:"Сборки и плейбуки"}, items:[
+   ["AME Wizard","Ameliorated-LLC","Применяет плейбуки к чистой Windows","Застосовує плейбуки до чистої Windows","Applies playbooks to a clean Windows"],
+   ["AtlasOS","Atlas-OS/Atlas","Облегчённая Windows для игр","Полегшена Windows для ігор","Lightweight Windows for gaming"],
+   ["ReviOS","meetrevision/playbook","Сбалансированная сборка","Збалансована збірка","Balanced everyday build"],
+   ["Optimize-Offline","DrEmpiricism/Optimize-Offline","Чистка install.wim до установки","Очищення install.wim до встановлення","Clean install.wim before installing"],
+   ["tiny11builder","ntdevlabs/tiny11builder","Урезанный ISO Windows 11","Урізаний ISO Windows 11","Stripped-down Windows 11 ISO"]]},
+  {name:{en:"Shell & themes", uk:"Оболонка та теми", ru:"Оболочка и темы"}, items:[
+   ["Open-Shell","Open-Shell/Open-Shell-Menu","Классический «Пуск» как в Windows 7","Класичний «Пуск» як у Windows 7","Classic Windows 7-style Start menu"],
+   ["Rectify11","Rectify11/Installer","Единообразный интерфейс Windows 11","Однорідний інтерфейс Windows 11","Consistent Windows 11 UI"],
+   ["SecureUxTheme","namazso/SecureUxTheme","Сторонние темы без патча","Сторонні теми без патча","Third-party themes without patching"],
+   ["TaskbarX","ChrisAnd1998/TaskbarX","Иконки по центру и анимация","Іконки по центру та анімація","Centered icons and animation"],
+   ["WinXCorners","vhanla/winxcorners","Горячие углы, как в macOS","Гарячі кути, як у macOS","macOS-style hot corners"],
+   ["MacType","snowie2000/mactype","Сглаживание шрифтов","Згладжування шрифтів","Better font rendering"]]},
+  {name:{en:"Hidden features & policies", uk:"Приховані функції та політики", ru:"Скрытые функции и политики"}, items:[
+   ["ViVeTool","thebookisclosed/ViVe","Экспериментальные функции по ID","Експериментальні функції за ID","Enable experimental features by ID"],
+   ["ViVeTool-GUI","PeterStrick/ViVeTool-GUI","Графическая версия с поиском","Графічна версія з пошуком","GUI version with search"],
+   ["PolicyPlus","Fleex255/PolicyPlus","Групповые политики в Windows Home","Групові політики в Windows Home","Group Policy editor for Windows Home"],
+   ["ConfigureDefender","AndyFul/ConfigureDefender","Скрытые настройки Defender","Приховані налаштування Defender","Hidden Defender settings"],
+   ["Total Registry","zodiacon/TotalRegistry","Продвинутый редактор реестра","Просунутий редактор реєстру","Advanced registry editor"],
+   ["Flyby11","builtbybel/Flyby11","Обновление до Windows 11 на неподдерживаемых ПК","Оновлення до Windows 11 на непідтримуваних ПК","Upgrade unsupported PCs to Windows 11"],
+   ["LTSC-Add-MicrosoftStore","kkkgo/LTSC-Add-MicrosoftStore","Microsoft Store в LTSC","Microsoft Store в LTSC","Microsoft Store on LTSC"]]}
+ ], note:{en:"Builds like AtlasOS often disable Defender and updates — don't use them on work PCs.", uk:"Збірки на кшталт AtlasOS часто вимикають Defender і оновлення — не ставте їх на робочі ПК.", ru:"Сборки вроде AtlasOS часто отключают Defender и обновления — не ставьте их на рабочие ПК."}},
+ {id:"safety", icon:"🛡️", title:{en:"Safety", uk:"Безпека", ru:"Безопасность"},
+  desc:{en:"Read this before tweaking.", uk:"Прочитайте перед твіками.", ru:"Прочитайте перед твиками."}, special:"safety"}
+];
+
+const KEYS = [
+ [["Win","V"], {en:"Clipboard history", uk:"Історія буфера обміну", ru:"История буфера обмена"}],
+ [["Win","."], {en:"Emoji, kaomoji and symbols", uk:"Емодзі, каомодзі та спецсимволи", ru:"Эмодзи, каомодзи и спецсимволы"}],
+ [["Win","Shift","S"], {en:"Snip an area, record video, OCR", uk:"Скриншот області, запис відео, OCR", ru:"Скриншот области, запись видео, OCR"}],
+ [["Win","Ctrl","Shift","B"], {en:"Restart the graphics driver", uk:"Перезапуск відеодрайвера", ru:"Перезапуск видеодрайвера"}],
+ [["Win","Ctrl","D"], {en:"New virtual desktop", uk:"Новий віртуальний робочий стіл", ru:"Новый виртуальный рабочий стол"}],
+ [["Win","Ctrl","←/→"], {en:"Switch desktops", uk:"Перемикання робочих столів", ru:"Переключение рабочих столов"}],
+ [["Win","Z"], {en:"Snap layouts", uk:"Макети прив'язки вікон", ru:"Макеты привязки окон"}],
+ [["Win","G"], "Game Bar"],
+ [["Win","Alt","R"], {en:"Record gameplay", uk:"Запис гри", ru:"Запись игры"}],
+ [["Win","H"], {en:"Voice typing", uk:"Голосове введення", ru:"Голосовой ввод"}],
+ [["Win","Ctrl","L"], {en:"Live captions", uk:"Живі субтитри", ru:"Живые субтитры"}],
+ [["Ctrl","Shift","C"], {en:"Copy path (in File Explorer)", uk:"Скопіювати шлях (у провіднику)", ru:"Скопировать путь (в проводнике)"}],
+ [["Win","Ctrl","Enter"], {en:"Narrator", uk:"Екранний диктор", ru:"Экранный диктор"}]
+];
+const GODMODE = "<code>GodMode.{ED7BA470-8E54-465E-825C-99712043E01C}</code>";
+const TIPS = [
+ ["God Mode", {en:`Create a folder named ${GODMODE} — it holds all 200+ system settings.`, uk:`Створіть теку з назвою ${GODMODE} — усередині всі 200+ системних налаштувань.`, ru:`Создайте папку ${GODMODE} — внутри все 200+ системных настроек.`}],
+ [{en:"End task", uk:"Завершити завдання", ru:"Завершить задачу"}, {en:"Settings → System → For developers. Kill a frozen game by right-clicking its taskbar icon.", uk:"Параметри → Система → Для розробників. Закриває завислу гру правим кліком по значку.", ru:"Параметры → Система → Для разработчиков. Закрывает зависшую игру правым кликом по значку."}],
+ [{en:"Sudo for Windows", uk:"Sudo для Windows", ru:"Sudo для Windows"}, {en:"24H2: enable it under “For developers”, then run <code>sudo command</code>.", uk:"24H2: вмикається в «Для розробників», потім <code>sudo команда</code>.", ru:"24H2: включается в «Для разработчиков», затем <code>sudo команда</code>."}],
+ [{en:"Shake to minimize", uk:"Струснути вікно", ru:"Встряхнуть окно"}, {en:"Settings → System → Multitasking. Minimizes all other windows.", uk:"Параметри → Система → Багатозадачність. Згортає інші вікна.", ru:"Параметры → Система → Многозадачность. Сворачивает остальные окна."}],
+ [{en:"Dynamic lock", uk:"Динамічне блокування", ru:"Динамическая блокировка"}, {en:"Locks the PC when you walk away with your phone. Accounts → Sign-in options.", uk:"ПК блокується, коли ви відходите з телефоном. Облікові записи → Параметри входу.", ru:"ПК блокируется, когда вы уходите с телефоном. Учётные записи → Варианты входа."}],
+ ["HDR", {en:"Windows HDR Calibration from the Microsoft Store, plus Auto HDR for older games.", uk:"Windows HDR Calibration у Microsoft Store та Auto HDR для старих ігор.", ru:"Windows HDR Calibration в Microsoft Store и Auto HDR для старых игр."}]
+];
+const CMDS = [
+ [{en:"Password of a saved Wi-Fi network", uk:"Пароль збереженої мережі Wi-Fi", ru:"Пароль сохранённой Wi-Fi сети"},
+  {en:'netsh wlan show profile name="NetworkName" key=clear', uk:'netsh wlan show profile name="НазваМережі" key=clear', ru:'netsh wlan show profile name="ИмяСети" key=clear'}],
+ [{en:"Laptop battery report", uk:"Звіт про батарею ноутбука", ru:"Отчёт о батарее ноутбука"}, "powercfg /batteryreport"],
+ [{en:"“Ultimate Performance” power plan", uk:"План «Максимальна продуктивність»", ru:"План «Максимальная производительность»"}, "powercfg -duplicatescheme e9a42b02-d5df-448d-aa00-03f14749eb61"],
+ [{en:"Classic context menu on Windows 11", uk:"Старе контекстне меню у Windows 11", ru:"Старое контекстное меню в Windows 11"}, 'reg add "HKCU\\Software\\Classes\\CLSID\\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\\InprocServer32" /f /ve'],
+ [{en:"Install an app with one command", uk:"Встановити програму однією командою", ru:"Установить программу одной командой"}, "winget install Playnite.Playnite"],
+ ["Sysinternals Suite", "winget install Microsoft.Sysinternals"]
+];
+const SAFETY = [
+ {en:"Download only from the <b>Releases</b> page of the official repository — there are many fakes with malware.", uk:"Завантажуйте лише зі сторінки <b>Releases</b> офіційного репозиторію — є багато підробок з вірусами.", ru:"Скачивайте только со страницы <b>Releases</b> официального репозитория — есть много подделок с вирусами."},
+ {en:"Create a <b>restore point</b> or a full backup (e.g. with Dism++) before tweaking.", uk:"Перед твіками створіть <b>точку відновлення</b> або повний бекап (наприклад, через Dism++).", ru:"Перед твиками создайте <b>точку восстановления</b> или полный бэкап (например, через Dism++)."},
+ {en:"Don't run several debloaters in a row — they conflict and break the Store, search or updates.", uk:"Не запускайте кілька деблоатерів поспіль — вони конфліктують і ламають Store, пошук або оновлення.", ru:"Не запускайте несколько деблоатеров подряд — они конфликтуют и ломают Store, поиск или обновления."},
+ {en:"Read a script before running it, especially <code>irm ... | iex</code> one-liners.", uk:"Відкривайте скрипт перед запуском, особливо команди виду <code>irm ... | iex</code>.", ru:"Открывайте скрипт перед запуском, особенно команды вида <code>irm ... | iex</code>."},
+ {en:"Don't fully disable Windows Update and Defender on a PC that's online. Defer updates with PolicyPlus instead.", uk:"Не вимикайте Windows Update і Defender повністю, якщо ПК в інтернеті. Краще відкласти оновлення через PolicyPlus.", ru:"Не отключайте Windows Update и Defender совсем, если ПК в интернете. Лучше отложить обновления через PolicyPlus."},
+ {en:"In an organization, test tweakers on a virtual machine or a test PC first.", uk:"В організації спочатку перевіряйте твікери на віртуалці або тестовому ПК.", ru:"В организации сначала проверяйте твикеры на виртуалке или тестовом ПК."}
+];
+
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const url = p => p.startsWith("http") ? p : GH + p;
+const host = p => p.startsWith("http") ? new URL(p).hostname : p;
+const descOf = it => (lang === "uk" ? it[3] : lang === "en" ? it[4] : it[2]) || it[2];
+
+const main = document.getElementById("main");
+const tabs = document.getElementById("tabs");
+let appCount = 0;
+
+// user edits: default cards removed (by repo key) + cards added by the user.
+// With EDITING_ENABLED off, stored edits are ignored (not deleted), so everyone sees the published list.
+const STORE = "toolbox.edits.v1";
+let edits = {removed: [], added: []};
+if (EDITING_ENABLED) try {
+  const s = JSON.parse(localStorage.getItem(STORE));
+  if (s && Array.isArray(s.removed) && Array.isArray(s.added)) edits = s;
+} catch {}
+
+// group key = its Russian name (stable across languages and compatible with saved edits)
+const gKey = g => typeof g.name === "string" ? g.name : g.name.ru;
+
+const cardHTML = (n, p, d, key, mine) => `<div class="card${mine ? " mine" : ""}" data-key="${esc(key)}" data-q="${esc((n+" "+d+" "+p).toLowerCase())}">
+  <button class="rm" type="button" title="${esc(T("removeCard"))}" aria-label="${esc(T("removeCard"))}: ${esc(n)}">✕</button>
+  <div class="card-t"><a href="${url(p)}" target="_blank" rel="noopener">${esc(n)}${mine ? `<span class="mine-tag">${T("mine")}</span>` : ""}</a><span class="arr">↗</span></div><p>${esc(d)}</p><span class="host">${esc(host(p))}</span>
+  <div class="acts"><a class="btn" href="${url(p)}" target="_blank" rel="noopener">${p.startsWith("http") ? T("site") : T("github")}</a><button class="btn dl" data-src="${esc(p)}" title="${esc(T("dlTitle"))}"><span class="ic">⬇</span><span class="lb">${T("dl")}</span></button></div>
+  <div class="st"></div></div>`;
+const groupHTML = (secId, key, label, inner) => `<div class="group" data-sec="${secId}" data-group="${esc(key)}"><h3>${esc(label)}</h3><div class="cards">${inner}<button class="add-card" type="button"><b>+</b>${T("addCard")}</button></div></div>`;
+const addedCards = (secId, key) => edits.added.filter(a => a.sec === secId && a.group === key)
+  .map(a => { appCount++; return cardHTML(a.n, a.p, a.d, a.id, true); }).join("");
+
+// reveal on scroll (staggered)
+const io = new IntersectionObserver(es => es.forEach(e => {
+  if (e.isIntersecting) { const el = e.target; const i = [...el.parentElement.children].indexOf(el);
+    el.style.transitionDelay = (Math.min(i,12)*45)+"ms"; el.classList.add("vis"); io.unobserve(el);
+    setTimeout(()=>el.style.transitionDelay="", 1200); }
+}), {threshold:.08});
+
+let secs = [];
+function render() {
+  const removedSet = new Set(edits.removed);
+  appCount = 0; main.innerHTML = ""; tabs.innerHTML = "";
+  DATA.forEach(sec => {
+    const s = document.createElement("section");
+    s.id = sec.id;
+    let html = `<div class="sec-h"><div class="sec-ic">${sec.icon}</div><h2>${esc(L(sec.title))}</h2></div><p class="sec-d">${esc(L(sec.desc))}</p>`;
+    if (sec.groups) {
+      sec.groups.forEach(g => {
+        let inner = "";
+        g.items.forEach(it => {
+          if (removedSet.has(it[1])) return;
+          appCount++;
+          inner += cardHTML(it[0], it[1], descOf(it), it[1], false);
+        });
+        html += groupHTML(sec.id, gKey(g), L(g.name), inner + addedCards(sec.id, gKey(g)));
+      });
+      // groups the user created in this section
+      [...new Set(edits.added.filter(a => a.sec === sec.id && !sec.groups.some(g => gKey(g) === a.group)).map(a => a.group))]
+        .forEach(gn => { html += groupHTML(sec.id, gn, gn, addedCards(sec.id, gn)); });
+      if (sec.note) html += `<div class="note">⚠️ ${esc(L(sec.note))}</div>`;
+    } else if (sec.special === "tricks") {
+      html += `<h3>${T("hotkeys")}</h3><div class="keys">` +
+        KEYS.map(([k,d]) => `<div class="key"><div class="combo">${k.map(x=>`<kbd>${x}</kbd>`).join("")}</div><span>${esc(L(d))}</span></div>`).join("") +
+        `</div><h3>${T("hidden")}</h3><div class="tips">` +
+        TIPS.map(([t,d]) => `<div class="tip"><b>${esc(L(t))}</b><span>${L(d)}</span></div>`).join("") +
+        `</div><h3>${T("cmds")}</h3><div class="cmds">` +
+        CMDS.map(([t,c]) => `<div class="cmd"><div class="cmd-h"><span style="display:flex;align-items:center"><span class="dots"><i></i><i></i><i></i></span>${esc(L(t))}</span><button class="copy" type="button">${T("copy")}</button></div><pre>${esc(L(c))}</pre></div>`).join("") +
+        `</div>`;
+    } else if (sec.special === "safety") {
+      html += `<ol class="warn">` + SAFETY.map(t => `<li>${L(t)}</li>`).join("") + `</ol>`;
+    }
+    s.innerHTML = html;
+    main.appendChild(s);
+
+    const b = document.createElement("button");
+    b.className = "tab"; b.textContent = sec.icon + " " + L(sec.title); b.dataset.id = sec.id;
+    b.onclick = () => document.getElementById(sec.id).scrollIntoView();
+    tabs.appendChild(b);
+  });
+  document.querySelectorAll(".card,.key,.tip,.cmd,.warn li").forEach(el => io.observe(el));
+  secs = [...document.querySelectorAll("section")];
+}
+
+// static texts in the markup: data-i18n (text), data-i18n-ph (placeholder), data-i18n-title (tooltip)
+function applyStatic() {
+  document.documentElement.lang = lang;
+  document.querySelectorAll("[data-i18n]").forEach(el => el.textContent = T(el.dataset.i18n));
+  document.querySelectorAll("[data-i18n-ph]").forEach(el => el.placeholder = T(el.dataset.i18nPh));
+  document.querySelectorAll("[data-i18n-title]").forEach(el => el.title = T(el.dataset.i18nTitle));
+  document.querySelectorAll("#lang button").forEach(b => b.classList.toggle("on", b.dataset.l === lang));
+}
+
+render();
+applyStatic();
+
+// animated counters (first load only; later updates set the number directly)
+const counts = {apps: appCount, keys: KEYS.length, secs: DATA.length};
+document.querySelectorAll("[data-count]").forEach(el => {
+  const target = counts[el.dataset.count]; const t0 = performance.now();
+  (function step(t){ const k = Math.min(1,(t-t0)/1400); el.textContent = Math.round(target*(1-Math.pow(1-k,3))); if(k<1) requestAnimationFrame(step); })(t0);
+});
+
+// spotlight follows cursor on cards
+document.addEventListener("pointermove", e => {
+  const c = e.target.closest(".card"); if (!c) return;
+  const r = c.getBoundingClientRect();
+  c.style.setProperty("--mx", (e.clientX-r.left)+"px"); c.style.setProperty("--my", (e.clientY-r.top)+"px");
+});
+
+// download buttons: latest GitHub release → best Windows asset → direct download
+const DL_OVERRIDE = {
+  "RPCS3/rpcs3": "RPCS3/rpcs3-binaries-win",
+  "moonlight-stream": "moonlight-stream/moonlight-qt",
+  "dolphin-emu/dolphin": "https://dolphin-emu.org/download/",
+  "hrydgard/ppsspp": "https://www.ppsspp.org/download/",
+  "uup-dump": "https://uupdump.net/",
+  "cschneegans/unattend-generator": "https://schneegans.de/windows/unattend-generator/",
+  "Ameliorated-LLC": "https://ameliorated.io/",
+  "https://gitlab.com/CalcProgrammer1/OpenRGB": "https://openrgb.org/releases.html",
+  "https://learn.microsoft.com/sysinternals/": "https://download.sysinternals.com/files/SysinternalsSuite.zip",
+  "wireshark/wireshark": "https://www.wireshark.org/download.html",
+  "nmap/nmap": "https://nmap.org/download.html",
+  "winscp/winscp": "https://winscp.net/eng/download.php",
+  "zabbix/zabbix": "https://www.zabbix.com/download_agents"
+};
+const SKIP_EXT = /\.(sha\d*|sig|asc|txt|json|ya?ml|blockmap|pdb|sym|md5|dmg|pkg|appimage|deb|rpm|apk|aab|ipa|flatpak|snap|tar\.(gz|xz|bz2|zst)|tgz|xz)$/;
+const SKIP_NAME = /(linux|macos|darwin|osx|android|ios|freebsd|source|src|debug|symbols|dbgsym)/;
+function pickAsset(assets) {
+  let best = null, bs = -1e9;
+  for (const a of assets) {
+    const n = a.name.toLowerCase();
+    if (SKIP_EXT.test(n) || SKIP_NAME.test(n)) continue;
+    let s;
+    if (n.endsWith(".exe")) s = 50; else if (n.endsWith(".msi")) s = 45;
+    else if (/\.msix(bundle)?$/.test(n)) s = 30; else if (n.endsWith(".zip")) s = 25;
+    else if (n.endsWith(".7z")) s = 20; else continue;
+    const win = /win/.test(n);
+    if (win) s += 20;
+    if (/(x64|amd64|x86_64|win64)/.test(n)) s += 10;
+    if (/(arm64|aarch64|arm)/.test(n)) s -= 40;
+    if (/(x86|win32|i386|i686)/.test(n) && !/x86_64/.test(n)) s -= 8;
+    if (/(setup|install)/.test(n)) s += 4;
+    if (/(\dto\d|update|patch|delta|uninstall)/.test(n)) s -= 30;
+    if (!win && /\.(zip|7z)$/.test(n)) s -= 15;
+    if (s > bs) { bs = s; best = a; }
+  }
+  return bs >= 10 ? best : null;
+}
+const gh = r => fetch("https://api.github.com/repos/" + r, {headers: {Accept: "application/vnd.github+json"}});
+// result: {url, direct, note: message key | file: {name, size, tag}}
+async function findDownload(src) {
+  const target = DL_OVERRIDE[src] || src;
+  if (target.startsWith("http")) {
+    const direct = /\.(zip|exe|msi|7z)$/i.test(target);
+    return {url: target, direct, note: direct ? null : "nSite", file: direct ? {name: target.split("/").pop()} : null};
+  }
+  if (!target.includes("/")) return {url: GH + target, direct: false, note: "nOrg"};
+  const page = GH + target + "/releases";
+  let rel = null, r = await gh(target + "/releases/latest");
+  if (r.status === 403 || r.status === 429) return {url: page, direct: false, note: "nLimit"};
+  if (r.ok) rel = await r.json();
+  if (!rel || !(rel.assets || []).length) {
+    r = await gh(target + "/releases?per_page=6");
+    if (r.ok) rel = (await r.json()).find(x => !x.draft && x.assets && x.assets.length) || rel;
+  }
+  const a = rel && pickAsset(rel.assets || []);
+  if (!a) return {url: rel ? page : GH + target, direct: false, note: "nNoWin"};
+  return {url: a.browser_download_url, direct: true, file: {name: a.name, size: a.size, tag: rel.tag_name || ""}};
+}
+const noteText = res => {
+  if (!res.file) return T(res.note);
+  const f = res.file;
+  if (f.size == null) return f.name;
+  const mb = (f.size / 1048576).toFixed(f.size > 10485760 ? 0 : 1);
+  return `${f.name} · ${mb} ${T("mb")} · ${f.tag}`;
+};
+const dlCache = new Map();
+document.addEventListener("click", async e => {
+  const b = e.target.closest(".btn.dl[data-src]"); if (!b) return;
+  const lb = b.querySelector(".lb"), ic = b.querySelector(".ic"), st = b.closest(".card").querySelector(".st");
+  b.classList.remove("ok", "alt"); b.classList.add("busy"); lb.textContent = T("dlBusy"); ic.textContent = "◌";
+  let res;
+  try { res = dlCache.get(b.dataset.src) || await findDownload(b.dataset.src); dlCache.set(b.dataset.src, res); }
+  catch { const s = b.dataset.src; res = {url: s.startsWith("http") ? s : GH + s + "/releases", direct: false, note: "nOffline"}; }
+  b.classList.remove("busy");
+  st.textContent = noteText(res); st.classList.add("show");
+  if (res.direct) {
+    const a = document.createElement("a"); a.href = res.url; a.rel = "noopener"; a.setAttribute("download", "");
+    document.body.appendChild(a); a.click(); a.remove();
+    b.classList.add("ok"); lb.textContent = T("dlOk"); ic.textContent = "✓";
+  } else {
+    window.open(res.url, "_blank", "noopener");
+    b.classList.add("alt"); lb.textContent = T("dlOpen"); ic.textContent = "↗";
+  }
+  setTimeout(() => { b.classList.remove("ok", "alt"); lb.textContent = T("dl"); ic.textContent = "⬇"; }, 4000);
+});
+
+// copy buttons
+document.addEventListener("click", async e => {
+  const b = e.target.closest(".copy"); if (!b) return;
+  const txt = b.closest(".cmd").querySelector("pre").textContent;
+  try { await navigator.clipboard.writeText(txt); } catch { const ta=document.createElement("textarea"); ta.value=txt; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); ta.remove(); }
+  b.textContent = T("copied"); b.classList.add("done");
+  setTimeout(()=>{ b.textContent = T("copy"); b.classList.remove("done"); }, 1600);
+});
+
+// search
+const q = document.getElementById("q"), empty = document.getElementById("empty");
+function applySearch() {
+  const v = q.value.trim().toLowerCase(); let any = false;
+  document.querySelectorAll("section").forEach(s => {
+    let secHit = false;
+    s.querySelectorAll(".group").forEach(g => {
+      let hit = false;
+      g.querySelectorAll(".card").forEach(c => { const m = !v || c.dataset.q.includes(v); c.classList.toggle("hidden", !m); if (m) { hit = true; if (v) c.classList.add("vis"); } });
+      g.classList.toggle("hidden", !hit && !!v); secHit ||= hit;
+    });
+    const plain = !s.querySelector(".group");
+    s.classList.toggle("hidden", !!v && (plain || !secHit)); if (!v || secHit) any = true;
+  });
+  empty.style.display = any ? "none" : "block";
+}
+q.addEventListener("input", applySearch);
+
+// active tab + progress + top button
+const topBtn = document.getElementById("top"), prog = document.getElementById("progress");
+function onScroll() {
+  const y = scrollY; prog.style.width = (y/(document.documentElement.scrollHeight-innerHeight)*100)+"%";
+  topBtn.classList.toggle("show", y > 600);
+  let cur = secs[0].id; secs.forEach(s => { if (!s.classList.contains("hidden") && s.offsetTop - 150 <= y) cur = s.id; });
+  document.querySelectorAll(".tab").forEach(t => t.classList.toggle("on", t.dataset.id === cur));
+}
+addEventListener("scroll", onScroll, {passive:true});
+topBtn.onclick = () => scrollTo({top:0});
+onScroll();
+
+// ---- edit mode: remove / add cards, persisted in localStorage --------------------------
+const editBtn = document.getElementById("editBtn"), editInfo = document.getElementById("editInfo");
+if (!EDITING_ENABLED) editBtn.remove();
+const toastEl = document.getElementById("toast");
+let toastTimer;
+
+function saveEdits() {
+  try { localStorage.setItem(STORE, JSON.stringify(edits)); } catch {}
+  updateEditInfo();
+}
+function updateEditInfo() {
+  const r = edits.removed.length, a = edits.added.length;
+  editInfo.textContent = r || a ? T("editStats", r, a) : T("editHint");
+  editBtn.textContent = document.body.classList.contains("editing") ? T("done") : T("edit");
+}
+function updateCount() {
+  const el = document.querySelector('[data-count="apps"]');
+  if (el) el.textContent = document.querySelectorAll(".card:not(.out)").length;
+}
+function toast(msg, onUndo) {
+  toastEl.innerHTML = `<span>${esc(msg)}</span>` + (onUndo ? `<button type="button">${T("undo")}</button>` : "");
+  if (onUndo) toastEl.querySelector("button").onclick = () => { onUndo(); toastEl.classList.remove("show"); };
+  toastEl.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toastEl.classList.remove("show"), 6000);
+}
+
+editBtn.onclick = () => {
+  const on = document.body.classList.toggle("editing");
+  editBtn.classList.toggle("on", on);
+  updateEditInfo();
+};
+
+// remove a card (undo via toast)
+document.addEventListener("click", e => {
+  const rm = e.target.closest(".rm"); if (!rm) return;
+  const card = rm.closest(".card"), key = card.dataset.key;
+  const name = card.querySelector(".card-t a").firstChild.textContent;
+  const parent = card.parentElement, next = card.nextElementSibling;
+  let undo;
+  if (card.classList.contains("mine")) {
+    const i = edits.added.findIndex(a => a.id === key);
+    const item = edits.added.splice(i, 1)[0];
+    undo = () => edits.added.splice(i, 0, item);
+  } else {
+    edits.removed.push(key);
+    undo = () => { edits.removed = edits.removed.filter(k => k !== key); };
+  }
+  saveEdits();
+  card.classList.add("out");
+  const t = setTimeout(() => { card.remove(); updateCount(); }, 300);
+  toast(T("removed", name), () => {
+    clearTimeout(t); undo(); saveEdits();
+    parent.insertBefore(card, next && next.parentElement === parent ? next : parent.querySelector(".add-card"));
+    card.classList.remove("out"); card.classList.add("new", "vis");
+    setTimeout(() => card.classList.remove("new"), 600);
+    updateCount();
+  });
+});
+
+// add dialog
+const dlg = document.getElementById("addDlg"), form = document.getElementById("addForm");
+const fSrc = form.elements.src, fName = form.elements.n, fDesc = form.elements.d;
+const fSec = form.elements.sec, fGroup = form.elements.group, fNew = form.elements.newGroup;
+const newGroupL = document.getElementById("newGroupL"), ghHint = document.getElementById("ghHint"), addErr = document.getElementById("addErr");
+const editableSecs = DATA.filter(s => s.groups);
+function fillSecs() {
+  const v = fSec.value;
+  fSec.innerHTML = editableSecs.map(s => `<option value="${s.id}">${s.icon} ${esc(L(s.title))}</option>`).join("");
+  if (v) fSec.value = v;
+}
+function fillGroups(selected) {
+  const groups = [...document.querySelectorAll(`#${fSec.value} .group`)];
+  fGroup.innerHTML = groups.map(g => `<option value="${esc(g.dataset.group)}">${esc(g.querySelector("h3").textContent)}</option>`).join("") +
+    `<option value="__new">${T("newGroupOpt")}</option>`;
+  if (selected && groups.some(g => g.dataset.group === selected)) fGroup.value = selected;
+  newGroupL.hidden = fGroup.value !== "__new";
+}
+fSec.onchange = () => fillGroups();
+fGroup.onchange = () => { newGroupL.hidden = fGroup.value !== "__new"; if (!newGroupL.hidden) fNew.focus(); };
+
+// "https://github.com/owner/repo/..." | "owner/repo" | any http(s) link → canonical source
+function normSrc(v) {
+  v = v.trim().replace(/\.git$/i, "").replace(/\/+$/, "");
+  const m = v.match(/^(?:https?:\/\/)?(?:www\.)?github\.com\/([\w.-]+)(?:\/([\w.-]+))?/i);
+  if (m) return m[2] ? m[1] + "/" + m[2] : m[1];
+  if (/^[\w.-]+\/[\w.-]+$/.test(v)) return v;
+  if (/^https?:\/\//i.test(v)) { try { new URL(v); return v; } catch {} }
+  return null;
+}
+
+function openAdd(secId, groupKey) {
+  form.reset(); addErr.textContent = ""; ghHint.textContent = ""; ghHint.className = "hint";
+  fName.dataset.auto = fDesc.dataset.auto = "1";
+  fillSecs();
+  fSec.value = secId || editableSecs[0].id;
+  fillGroups(groupKey);
+  dlg.showModal();
+  fSrc.focus();
+}
+document.addEventListener("click", e => {
+  const b = e.target.closest(".add-card"); if (!b) return;
+  const g = b.closest(".group");
+  openAdd(g.dataset.sec, g.dataset.group);
+});
+document.getElementById("addCancel").onclick = () => dlg.close();
+dlg.addEventListener("click", e => { if (e.target === dlg) dlg.close(); }); // click on backdrop
+
+// fill name/description from GitHub while typing the repo
+fName.oninput = () => { fName.dataset.auto = fName.value ? "" : "1"; };
+fDesc.oninput = () => { fDesc.dataset.auto = fDesc.value ? "" : "1"; };
+let ghTimer, ghSeq = 0;
+fSrc.addEventListener("input", () => {
+  clearTimeout(ghTimer);
+  const p = normSrc(fSrc.value);
+  ghHint.className = "hint";
+  if (!p || p.startsWith("http") || !p.includes("/")) { ghHint.textContent = p && p.startsWith("http") ? T("ghPlain") : ""; return; }
+  ghHint.textContent = T("ghLooking");
+  const seq = ++ghSeq;
+  ghTimer = setTimeout(async () => {
+    try {
+      const r = await gh(p);
+      if (seq !== ghSeq) return;
+      if (!r.ok) { ghHint.textContent = r.status === 404 ? T("gh404") : T("ghFail"); return; }
+      const j = await r.json();
+      if (fName.dataset.auto) fName.value = j.name;
+      if (fDesc.dataset.auto && j.description) fDesc.value = j.description.length > 90 ? j.description.slice(0, 87) + "…" : j.description;
+      const stars = j.stargazers_count >= 1000 ? (j.stargazers_count / 1000).toFixed(1) + "k" : j.stargazers_count;
+      ghHint.textContent = `✓ ${j.full_name} · ★ ${stars}${j.archived ? " · " + T("archived") : ""}`;
+      ghHint.className = "hint ok";
+    } catch { if (seq === ghSeq) ghHint.textContent = T("ghOffline"); }
+  }, 450);
+});
+
+form.addEventListener("submit", e => {
+  e.preventDefault();
+  const p = normSrc(fSrc.value), n = fName.value.trim(), d = fDesc.value.trim() || T("addedManually");
+  const group = fGroup.value === "__new" ? fNew.value.trim() : fGroup.value;
+  if (!p) return addErr.textContent = T("errSrc");
+  if (!n) return addErr.textContent = T("errName");
+  if (!group) return addErr.textContent = T("errGroup");
+  const dup = [...document.querySelectorAll(".card:not(.out) .btn.dl")].find(b => b.dataset.src.toLowerCase() === p.toLowerCase());
+  if (dup) return addErr.textContent = T("errDup", dup.closest(".card").querySelector(".card-t a").firstChild.textContent);
+
+  const item = {id: "u" + Date.now().toString(36), sec: fSec.value, group, n, p, d};
+  edits.added.push(item);
+  saveEdits();
+
+  const secEl = document.getElementById(item.sec);
+  let gEl = [...secEl.querySelectorAll(".group")].find(g => g.dataset.group === group);
+  if (!gEl) {
+    const note = secEl.querySelector(".note");
+    (note || secEl).insertAdjacentHTML(note ? "beforebegin" : "beforeend", groupHTML(item.sec, group, group, ""));
+    gEl = [...secEl.querySelectorAll(".group")].find(g => g.dataset.group === group);
+  }
+  gEl.querySelector(".add-card").insertAdjacentHTML("beforebegin", cardHTML(n, p, d, item.id, true));
+  const card = gEl.querySelector(`.card[data-key="${item.id}"]`);
+  card.classList.add("vis", "new");
+  dlg.close();
+  card.scrollIntoView({block: "center", behavior: "smooth"});
+  updateCount();
+  toast(T("added", n));
+});
+
+// export / import / reset
+document.getElementById("expBtn").onclick = () => {
+  const blob = new Blob([JSON.stringify({app: "windows-toolbox", version: 1, ...edits}, null, 2)], {type: "application/json"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob); a.download = "toolbox-edits.json";
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+  toast(T("exported"));
+};
+const impFile = document.getElementById("impFile");
+document.getElementById("impBtn").onclick = () => impFile.click();
+impFile.onchange = async () => {
+  const f = impFile.files[0]; impFile.value = ""; if (!f) return;
+  try {
+    const j = JSON.parse(await f.text());
+    const str = v => typeof v === "string" ? v.slice(0, 300) : "";
+    const next = {
+      removed: (j.removed || []).filter(k => typeof k === "string"),
+      added: (j.added || []).filter(a => a && a.n && a.p && a.sec && a.group && normSrc(String(a.p)))
+        .map((a, i) => ({id: str(a.id) || "u" + Date.now().toString(36) + i, sec: str(a.sec), group: str(a.group), n: str(a.n), p: normSrc(String(a.p)), d: str(a.d)}))
+    };
+    if (!Array.isArray(j.removed) && !Array.isArray(j.added)) throw 0;
+    edits = next; saveEdits(); location.reload();
+  } catch { toast(T("importErr")); }
+};
+document.getElementById("resetBtn").onclick = () => {
+  if (!edits.removed.length && !edits.added.length) return toast(T("resetNone"));
+  if (!confirm(T("resetConfirm"))) return;
+  edits = {removed: [], added: []}; saveEdits(); location.reload();
+};
+updateEditInfo();
+
+// ---- language switch ---------------------------------------------------------------------
+document.getElementById("lang").addEventListener("click", e => {
+  const b = e.target.closest("button[data-l]"); if (!b || b.dataset.l === lang) return;
+  lang = b.dataset.l;
+  try { localStorage.setItem("toolbox.lang", lang); } catch {}
+  const y = scrollY;
+  render(); applyStatic(); applySearch(); updateEditInfo(); updateCount(); updateVersion();
+  document.querySelectorAll(".card,.key,.tip,.cmd,.warn li").forEach(el => el.classList.add("vis")); // no re-reveal on switch
+  main.classList.remove("swap"); void main.offsetWidth; main.classList.add("swap");
+  scrollTo(0, y); onScroll();
+});
+
+// ---- desktop app: show its version and offer a newer release ---------------------------
+// The exe opens this page as index.html?appv=<version>; in a normal browser there is no appv.
+const appv = new URLSearchParams(location.search).get("appv");
+const verEl = document.getElementById("ver");
+const updateVersion = () => { verEl.textContent = appv ? T("appVersion", appv) : ""; };
+updateVersion();
+const semver = v => String(v).replace(/^v/i, "").split(/[.-]/).slice(0, 3).map(x => parseInt(x, 10) || 0);
+const newer = (a, b) => { const x = semver(a), y = semver(b); for (let i = 0; i < 3; i++) if (x[i] !== y[i]) return x[i] > y[i]; return false; };
+if (appv && !/dev/.test(appv)) {
+  gh(REPO + "/releases/latest").then(r => r.ok ? r.json() : null).then(rel => {
+    if (!rel || !newer(rel.tag_name, appv)) return;
+    let skipped = null; try { skipped = localStorage.getItem("toolbox.skipVersion"); } catch {}
+    if (skipped === rel.tag_name) return;
+    const exe = (rel.assets || []).find(a => /\.exe$/i.test(a.name));
+    document.getElementById("updVer").textContent = rel.tag_name;
+    document.getElementById("updLink").href = exe ? exe.browser_download_url : rel.html_url;
+    const upd = document.getElementById("upd");
+    upd.hidden = false;
+    document.getElementById("updX").onclick = () => { upd.hidden = true; try { localStorage.setItem("toolbox.skipVersion", rel.tag_name); } catch {} };
+  }).catch(() => {});
+}
+
+// theme
+const root = document.documentElement, tb = document.getElementById("theme");
+const setTheme = t => { root.dataset.theme = t; tb.textContent = t === "light" ? "☾" : "☀"; try { localStorage.setItem("theme", t); } catch {} };
+let saved = null; try { saved = localStorage.getItem("theme"); } catch {}
+setTheme(saved || (matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark"));
+tb.onclick = () => setTheme(root.dataset.theme === "light" ? "dark" : "light");
+})();
+</script>
+</body>
+</html>
